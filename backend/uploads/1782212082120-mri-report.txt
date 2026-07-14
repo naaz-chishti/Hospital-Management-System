@@ -1,0 +1,11 @@
+Patient: John Doe
+
+MRI Brain
+
+Findings:
+No acute infarct.
+No hemorrhage.
+Ventricles normal.
+
+Impression:
+Normal MRI Brain.

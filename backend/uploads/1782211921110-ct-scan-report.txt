@@ -1,0 +1,11 @@
+Patient: John Doe
+
+CT Abdomen
+
+Findings:
+Liver normal.
+Kidneys normal.
+No mass lesion.
+
+Impression:
+Normal CT Abdomen.

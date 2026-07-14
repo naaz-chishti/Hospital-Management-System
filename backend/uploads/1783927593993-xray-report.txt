@@ -1,0 +1,13 @@
+Patient: John Doe
+Patient ID: PAT0001
+
+Examination:
+Chest X-Ray
+
+Findings:
+Lungs are clear.
+No pleural effusion.
+Heart size normal.
+
+Impression:
+Normal Chest X-Ray.
