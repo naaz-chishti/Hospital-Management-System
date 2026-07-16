@@ -114,44 +114,51 @@ pr:6,
 >
 
 <Box
-display="flex"
-alignItems="center"
-gap={2}
-mb={5}
+  sx={{
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    mb: 2,
+  }}
 >
 
-<LocalHospital
-sx={{
-fontSize:48,
-color:"#14B8A6",
-}}
-/>
+  <LocalHospital
+    sx={{
+      fontSize: 55,
+      color: "#14B8A6",
+      mb: 2,
+    }}
+  />
 
-<Typography
-variant="h3"
-fontWeight={700}
->
-
-HMS ERP
-
-</Typography>
+  <Typography
+    align="center"
+    sx={{
+      fontSize: 62,
+      fontWeight: 600,
+      lineHeight: 1.05,
+      color: "#fff",
+    }}
+  >
+    Hospital
+    <br />
+    Management
+    <br />
+    System
+  </Typography>
 
 </Box>
-
-<Typography
-variant="h2"
-fontWeight={700}
-mb={2}
->
-
-Hospital Management System
-
-</Typography>
 
 <Typography
 fontSize={20}
 color="rgba(255,255,255,.85)"
 mb={5}
+  align="center"
+    sx={{
+      fontSize: 16,
+      fontWeight: 500,
+      lineHeight: 1.05,
+      color: "#fff",
+    }}
 >
 
 Smart, Secure and Modern Healthcare Management Platform
@@ -164,17 +171,53 @@ flexDirection="column"
 gap={2}
 >
 
-<Typography>✔ Patient Management</Typography>
+<Typography  align="center"
+    sx={{
+      fontSize: 16,
+      fontWeight: 500,
+      lineHeight: 1.05,
+      color: "#fff",
+    }}>✔ Patient Management</Typography>
 
-<Typography>✔ OPD & IPD Management</Typography>
+<Typography align="center"
+    sx={{
+      fontSize: 16,
+      fontWeight: 500,
+      lineHeight: 1.05,
+      color: "#fff",
+    }}>✔ OPD & IPD Management</Typography>
 
-<Typography>✔ Laboratory & Imaging</Typography>
+<Typography align="center"
+    sx={{
+      fontSize: 16,
+      fontWeight: 500,
+      lineHeight: 1.05,
+      color: "#fff",
+    }}>✔ Laboratory & Imaging</Typography>
 
-<Typography>✔ Billing & Insurance</Typography>
+<Typography align="center"
+    sx={{
+      fontSize: 16,
+      fontWeight: 500,
+      lineHeight: 1.05,
+      color: "#fff",
+    }}>✔ Billing & Insurance</Typography>
 
-<Typography>✔ Pharmacy Management</Typography>
+<Typography align="center"
+    sx={{
+      fontSize: 16,
+      fontWeight: 500,
+      lineHeight: 1.05,
+      color: "#fff",
+    }}>✔ Pharmacy Management</Typography>
 
-<Typography>✔ Reports & Analytics</Typography>
+<Typography align="center"
+    sx={{
+      fontSize: 16,
+      fontWeight: 500,
+      lineHeight: 1.05,
+      color: "#fff",
+    }}>✔ Reports & Analytics</Typography>
 
 </Box>
 
@@ -341,13 +384,38 @@ my:3,
 OR
 </Divider>
 
-<Button
-  fullWidth
-  sx={{ mt:2 }}
-  onClick={() => navigate("/register")}
+<Box
+  sx={{
+    mt: 3,
+    textAlign: "center",
+  }}
 >
-  Don't have an account? Register
-</Button>
+
+  <Typography
+    sx={{
+      fontSize: 16,
+      color: "#64748B",
+    }}
+  >
+    Don't have an account?{" "}
+    <Typography
+      component="span"
+      onClick={() => navigate("/register")}
+      sx={{
+        color: "#14B8A6",
+        fontWeight: 900,
+        cursor: "pointer",
+        
+        "&:hover": {
+          textDecoration: "underline",
+        },
+      }}
+    >
+      Register
+    </Typography>
+  </Typography>
+
+</Box>
 
 <Box
   sx={{

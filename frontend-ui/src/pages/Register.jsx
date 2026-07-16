@@ -197,13 +197,37 @@ function Register() {
             REGISTER
           </Button>
 
-          <Button
-            fullWidth
-            sx={{mt:2}}
-            onClick={() => navigate("/")}
-          >
-            Already have an account? Login
-          </Button>
+         <Box
+  sx={{
+    mt: 3,
+    textAlign: "center",
+  }}
+>
+
+  <Typography
+    sx={{
+      fontSize: 16,
+      color: "#64748B",
+    }}
+  >
+    Already have an account?{" "}
+    <Typography
+      component="span"
+      onClick={() => navigate("/")}
+      sx={{
+        color: "#14B8A6",
+        fontWeight: 900,
+        cursor: "pointer",
+        "&:hover": {
+          textDecoration: "underline",
+        },
+      }}
+    >
+      Login
+    </Typography>
+  </Typography>
+
+</Box>
 
         </CardContent>
 
