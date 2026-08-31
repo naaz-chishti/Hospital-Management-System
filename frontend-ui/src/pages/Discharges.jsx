@@ -1,6 +1,6 @@
 import {
-useEffect,
-useState
+  useEffect,
+  useState,
 } from "react";
 
 import {
@@ -10,36 +10,35 @@ import {
   Typography,
   TableRow,
   TableCell,
+  Table,
+  TableBody,
+  TableContainer,
+  TableHead,
+  Paper,
+  TextField,
+  MenuItem,
+  InputAdornment,
+  Button,
 } from "@mui/material";
+
+import ExitToAppRoundedIcon from "@mui/icons-material/ExitToAppRounded";
+import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import LocalHospitalRoundedIcon from "@mui/icons-material/LocalHospitalRounded";
+import AssignmentTurnedInRoundedIcon from "@mui/icons-material/AssignmentTurnedInRounded";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import FilterListRoundedIcon from "@mui/icons-material/FilterListRounded";
 
 import ModuleStats from "../components/ModuleStats";
 import ActionButtons from "../components/ActionButtons";
-
 import FormDialog from "../components/FormDialog";
-import { TextField, MenuItem } from "@mui/material";
-import { toast } from "react-toastify";
-
-import LocalHospitalRoundedIcon from "@mui/icons-material/LocalHospitalRounded";
-import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
-import ExitToAppRoundedIcon from "@mui/icons-material/ExitToAppRounded";
-import AssignmentTurnedInRoundedIcon from "@mui/icons-material/AssignmentTurnedInRounded";
-
-import {
-Table,
-TableBody,
-TableContainer,
-TableHead,
-Paper,
-} from "@mui/material";
-
-import ExitToAppIcon from "@mui/icons-material/ExitToApp";
-
 import PageHeader from "../components/PageHeader";
-import SearchBar from "../components/SearchBar";
 import StatusChip from "../components/StatusChip";
+
+import { toast } from "react-toastify";
 
 import DashboardLayout from "../layouts/DashboardLayout";
 import API from "../api/axios";
+
 
 const textFieldStyle = {
   "& .MuiOutlinedInput-root": {
@@ -75,1119 +74,2476 @@ const textFieldStyle = {
   },
 };
 
+
+const viewBoxStyle = {
+  p: 2,
+  border: "1px solid #E2E8F0",
+  borderRadius: 2,
+  bgcolor: "#F8FAFC",
+};
+
+
 function Discharges() {
 
-const [discharges, setDischarges] =
-useState([]);
+  /* ================================
+     DATA
+  ================================= */
 
-const [loading, setLoading] =
-useState(true);
+  const [discharges, setDischarges] =
+    useState([]);
 
-const [search, setSearch] = useState("");
+  const [loading, setLoading] =
+    useState(true);
 
-const [open, setOpen] = useState(false);
-const [viewOpen, setViewOpen] = useState(false);
+  const [patients, setPatients] =
+    useState([]);
 
-const [editingId, setEditingId] = useState(null);
+  const [doctors, setDoctors] =
+    useState([]);
 
-const [selectedDischarge, setSelectedDischarge] = useState(null);
+  const [admissionsList, setAdmissionsList] =
+    useState([]);
 
-const [patients, setPatients] = useState([]);
-const [doctors, setDoctors] = useState([]);
-const [admissionsList, setAdmissionsList] = useState([]);
 
-const [formData, setFormData] = useState({
-  admission: "",
-  patient: "",
-  doctor: "",
-  diagnosis: "",
-  treatmentGiven: "",
-  medications: "",
-  followUpDate: "",
-  summary: "",
-});
+  /* ================================
+     SEARCH / FILTER / SORT
+  ================================= */
 
-useEffect(() => {
-  fetchDischarges();
-  fetchPatients();
-  fetchDoctors();
-  fetchAdmissionsList();
-}, []);
+  const [search, setSearch] =
+    useState("");
 
-const fetchPatients = async () => {
-  try {
-    const res = await API.get("/patients");
-    setPatients(res.data.data || []);
-  } catch (err) {
-    toast.error("Failed to load patients");
-  }
-};
+  const [filter, setFilter] =
+    useState("all");
 
-const fetchDoctors = async () => {
-  try {
-    const res = await API.get("/doctors");
-    setDoctors(res.data.data || []);
-  } catch (err) {
-    toast.error("Failed to load doctors");
-  }
-};
+  const [sort, setSort] =
+    useState("latest");
 
-const fetchAdmissionsList = async () => {
-  try {
-    const res = await API.get("/admissions");
-    setAdmissionsList(res.data.data || []);
-  } catch (err) {
-    toast.error("Failed to load admissions");
-  }
-};
 
-const handleChange = (e) => {
-  setFormData({
-    ...formData,
-    [e.target.name]: e.target.value,
+  /* ================================
+     DIALOGS
+  ================================= */
+
+  const [open, setOpen] =
+    useState(false);
+
+  const [viewOpen, setViewOpen] =
+    useState(false);
+
+  const [editingId, setEditingId] =
+    useState(null);
+
+  const [selectedDischarge, setSelectedDischarge] =
+    useState(null);
+
+
+  /* ================================
+     FORM
+  ================================= */
+
+  const [formData, setFormData] = useState({
+
+    admission: "",
+    patient: "",
+    doctor: "",
+    diagnosis: "",
+    treatmentGiven: "",
+    medications: "",
+    followUpDate: "",
+    summary: "",
+
   });
-};
 
-const handleSubmit = async () => {
 
-  try {
+  /* ================================
+     INITIAL LOAD
+  ================================= */
 
-    const payload = {
-      ...formData,
-      medications: formData.medications
-        .split(",")
-        .map((m) => m.trim())
-        .filter(Boolean),
-    };
+  useEffect(() => {
 
-    if (editingId) {
+    fetchDischarges();
+    fetchPatients();
+    fetchDoctors();
+    fetchAdmissionsList();
 
-      await API.put(`/discharges/${editingId}`, payload);
+  }, []);
 
-      toast.success("Discharge updated successfully");
 
-    } else {
+  /* ================================
+     FETCH PATIENTS
+  ================================= */
 
-      await API.post("/discharges", payload);
+  const fetchPatients = async () => {
 
-      toast.success("Discharge created successfully");
+    try {
+
+      const res =
+        await API.get("/patients");
+
+      setPatients(
+        res.data.data || []
+      );
+
+    } catch (err) {
+
+      console.log(err);
+
+      toast.error(
+        "Failed to load patients"
+      );
 
     }
 
-    setOpen(false);
+  };
 
-    setEditingId(null);
 
-    fetchDischarges();
+  /* ================================
+     FETCH DOCTORS
+  ================================= */
 
-  } catch (err) {
+  const fetchDoctors = async () => {
 
-    toast.error(
-      err.response?.data?.message ||
-      "Failed to save discharge"
+    try {
+
+      const res =
+        await API.get("/doctors");
+
+      setDoctors(
+        res.data.data || []
+      );
+
+    } catch (err) {
+
+      console.log(err);
+
+      toast.error(
+        "Failed to load doctors"
+      );
+
+    }
+
+  };
+
+
+  /* ================================
+     FETCH ADMISSIONS
+  ================================= */
+
+  const fetchAdmissionsList = async () => {
+
+    try {
+
+      const res =
+        await API.get("/admissions");
+
+      setAdmissionsList(
+        res.data.data || []
+      );
+
+    } catch (err) {
+
+      console.log(err);
+
+      toast.error(
+        "Failed to load admissions"
+      );
+
+    }
+
+  };
+
+
+  /* ================================
+     FETCH DISCHARGES
+  ================================= */
+
+  const fetchDischarges = async () => {
+
+    try {
+
+      setLoading(true);
+
+      const res =
+        await API.get("/discharges");
+
+      setDischarges(
+        res.data.data || []
+      );
+
+    } catch (error) {
+
+      console.log(error);
+
+      toast.error(
+        error.response?.data?.message ||
+        "Failed to load discharges"
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+
+  /* ================================
+     FORM CHANGE
+  ================================= */
+
+  const handleChange = (e) => {
+
+    setFormData({
+
+      ...formData,
+
+      [e.target.name]:
+        e.target.value,
+
+    });
+
+  };
+
+
+  /* ================================
+     SUBMIT
+  ================================= */
+
+  const handleSubmit = async () => {
+
+    try {
+
+      const payload = {
+
+        ...formData,
+
+        medications:
+          formData.medications
+            .split(",")
+            .map(
+              (m) => m.trim()
+            )
+            .filter(Boolean),
+
+      };
+
+
+      if (editingId) {
+
+        await API.put(
+          `/discharges/${editingId}`,
+          payload
+        );
+
+        toast.success(
+          "Discharge updated successfully"
+        );
+
+      } else {
+
+        await API.post(
+          "/discharges",
+          payload
+        );
+
+        toast.success(
+          "Discharge created successfully"
+        );
+
+      }
+
+
+      setOpen(false);
+
+      setEditingId(null);
+
+      setFormData({
+
+        admission: "",
+        patient: "",
+        doctor: "",
+        diagnosis: "",
+        treatmentGiven: "",
+        medications: "",
+        followUpDate: "",
+        summary: "",
+
+      });
+
+      fetchDischarges();
+
+    } catch (err) {
+
+      console.log(err);
+
+      toast.error(
+        err.response?.data?.message ||
+        "Failed to save discharge"
+      );
+
+    }
+
+  };
+
+
+  /* ================================
+     VIEW
+  ================================= */
+
+  const handleView = (item) => {
+
+    setSelectedDischarge(item);
+
+    setViewOpen(true);
+
+  };
+
+
+  /* ================================
+     EDIT
+  ================================= */
+
+  const handleEdit = (item) => {
+
+    setEditingId(
+      item._id
     );
 
-  }
+    setFormData({
 
-};
+      admission:
+        item.admission?._id ||
+        "",
 
-const handleView = (item) => {
+      patient:
+        item.patient?._id ||
+        "",
 
-  toast.info("Viewing discharge");
+      doctor:
+        item.doctor?._id ||
+        "",
 
-  setSelectedDischarge(item);
+      diagnosis:
+        item.diagnosis ||
+        item.finalDiagnosis ||
+        "",
 
-  setViewOpen(true);
+      treatmentGiven:
+        item.treatmentGiven ||
+        "",
 
-};
+      medications:
+        item.medications?.join(", ") ||
+        "",
 
-const handleEdit = (item) => {
+      followUpDate:
+        item.followUpDate
+          ? item.followUpDate.substring(
+              0,
+              10
+            )
+          : "",
 
-  toast.info("Editing discharge");
+      summary:
+        item.summary ||
+        "",
 
-  setEditingId(item._id);
+    });
 
-  setFormData({
+    setOpen(true);
 
-    admission: item.admission?._id || "",
+  };
 
-    patient: item.patient?._id || "",
 
-    doctor: item.doctor?._id || "",
+  /* ================================
+     DELETE
+  ================================= */
 
-    diagnosis: item.diagnosis || "",
+  const handleDelete = async (id) => {
 
-    treatmentGiven: item.treatmentGiven || "",
+    if (
+      !window.confirm(
+        "Delete this discharge?"
+      )
+    ) {
+      return;
+    }
 
-    medications:
-      item.medications?.join(", ") || "",
 
-    followUpDate: item.followUpDate
-      ? item.followUpDate.substring(0,10)
-      : "",
+    try {
 
-    summary: item.summary || "",
+      await API.delete(
+        `/discharges/${id}`
+      );
 
-  });
+      toast.success(
+        "Discharge deleted successfully"
+      );
 
-  setOpen(true);
+      fetchDischarges();
 
-};
+    } catch (err) {
 
-const handleDelete = async (id) => {
+      console.log(err);
 
-  if (!window.confirm("Delete this discharge?"))
-    return;
+      toast.error(
+        err.response?.data?.message ||
+        "Delete failed"
+      );
 
-  try {
+    }
 
-    await API.delete(`/discharges/${id}`);
+  };
 
-    toast.success("Discharge deleted successfully");
 
-    fetchDischarges();
+  /* ================================
+     STATS
+  ================================= */
 
-  } catch (err) {
+  const stats = [
 
-    toast.error(
-      err.response?.data?.message ||
-      "Delete failed"
-    );
+    {
+      label: "Discharges",
 
-  }
+      value:
+        discharges.length,
 
-};
+      icon:
+        <ExitToAppRoundedIcon />,
+    },
 
-const stats = [
-{
-label:"Discharges",
-value:discharges.length,
-icon:<ExitToAppRoundedIcon />,
-},
-{
-label:"Completed",
-value:discharges.filter(
-d=>d.status==="Completed"
-).length,
-icon:<CheckCircleRoundedIcon />,
-},
-{
-label:"Doctors",
-value:new Set(
-discharges.map(d=>d.doctor?.name)
-).size,
-icon:<LocalHospitalRoundedIcon />,
-},
-{
-label:"Summaries",
-value:discharges.length,
-icon:<AssignmentTurnedInRoundedIcon />,
-},
-];
 
-const filteredDischarges = discharges.filter((item)=>{
+    {
+      label: "Completed",
 
-const text = search.toLowerCase();
+      value:
+        discharges.filter(
+          (d) =>
+            d.status ===
+            "Completed"
+        ).length,
 
-return(
+      icon:
+        <CheckCircleRoundedIcon />,
+    },
 
-`${item.patient?.firstName || ""} ${item.patient?.lastName || ""}`
-.toLowerCase()
-.includes(text)
 
-||
+    {
+      label: "Doctors",
 
-(item.doctor?.name || "")
-.toLowerCase()
-.includes(text)
+      value:
+        new Set(
+          discharges
+            .map(
+              (d) =>
+                d.doctor?.name
+            )
+            .filter(Boolean)
+        ).size,
 
-||
+      icon:
+        <LocalHospitalRoundedIcon />,
+    },
 
-(item.finalDiagnosis || "")
-.toLowerCase()
-.includes(text)
 
-);
+    {
+      label: "Summaries",
 
-});
+      value:
+        discharges.filter(
+          (d) =>
+            d.summary
+        ).length,
 
-const fetchDischarges = async () => {
+      icon:
+        <AssignmentTurnedInRoundedIcon />,
+    },
 
-try {
+  ];
 
-  const res =
-    await API.get("/discharges");
 
-  setDischarges(res.data.data);
+  /* ================================
+     SEARCH + FILTER + SORT
+  ================================= */
 
-} catch (error) {
+  const filteredDischarges =
+    discharges
 
-  console.log(error);
+      .filter((item) => {
 
-} finally {
+        const text =
+          search
+            .toLowerCase()
+            .trim();
 
-  setLoading(false);
+
+        const patientName =
+          `${item.patient?.firstName || ""} ${
+            item.patient?.lastName || ""
+          }`.toLowerCase();
+
+
+        const doctorName =
+          (
+            item.doctor?.name ||
+            ""
+          ).toLowerCase();
+
+
+        const diagnosis =
+          (
+            item.finalDiagnosis ||
+            item.diagnosis ||
+            ""
+          ).toLowerCase();
+
+
+        const dischargeId =
+          (
+            item.dischargeId ||
+            ""
+          ).toLowerCase();
+
+
+        const admissionId =
+          (
+            item.admission?.admissionId ||
+            ""
+          ).toLowerCase();
+
+
+        const treatment =
+          (
+            item.treatmentGiven ||
+            ""
+          ).toLowerCase();
+
+
+        const matchesSearch =
+          !text ||
+
+          patientName.includes(
+            text
+          ) ||
+
+          doctorName.includes(
+            text
+          ) ||
+
+          diagnosis.includes(
+            text
+          ) ||
+
+          dischargeId.includes(
+            text
+          ) ||
+
+          admissionId.includes(
+            text
+          ) ||
+
+          treatment.includes(
+            text
+          );
+
+
+        if (!matchesSearch) {
+          return false;
+        }
+
+
+        /* STATUS FILTER */
+
+        if (
+          filter === "completed"
+        ) {
+
+          return (
+            item.status ===
+            "Completed"
+          );
+
+        }
+
+
+        if (
+          filter === "pending"
+        ) {
+
+          return (
+            item.status !==
+            "Completed"
+          );
+
+        }
+
+
+        return true;
+
+      })
+
+
+      /* SORT */
+
+      .sort((a, b) => {
+
+        if (
+          sort === "name"
+        ) {
+
+          const nameA =
+            `${a.patient?.firstName || ""} ${
+              a.patient?.lastName || ""
+            }`.toLowerCase();
+
+
+          const nameB =
+            `${b.patient?.firstName || ""} ${
+              b.patient?.lastName || ""
+            }`.toLowerCase();
+
+
+          return nameA.localeCompare(
+            nameB
+          );
+
+        }
+
+
+        if (
+          sort === "oldest"
+        ) {
+
+          return (
+            new Date(
+              a.dischargeDate ||
+              a.createdAt ||
+              0
+            ) -
+
+            new Date(
+              b.dischargeDate ||
+              b.createdAt ||
+              0
+            )
+          );
+
+        }
+
+
+        return (
+
+          new Date(
+            b.dischargeDate ||
+            b.createdAt ||
+            0
+          ) -
+
+          new Date(
+            a.dischargeDate ||
+            a.createdAt ||
+            0
+          )
+
+        );
+
+      });
+
+
+  /* ================================
+     RENDER
+  ================================= */
+
+  return (
+
+    <DashboardLayout>
+
+      {/* HEADER */}
+
+      <PageHeader
+        title="Discharges"
+        subtitle="Manage patient discharge summaries"
+
+        buttonText="New Discharge"
+
+        onButtonClick={() => {
+
+          setEditingId(null);
+
+          setFormData({
+
+            admission: "",
+            patient: "",
+            doctor: "",
+            diagnosis: "",
+            treatmentGiven: "",
+            medications: "",
+            followUpDate: "",
+            summary: "",
+
+          });
+
+          setOpen(true);
+
+        }}
+      />
+
+
+      {/* STATS */}
+
+      <ModuleStats
+        stats={stats}
+      />
+
+
+      {/* ==============================
+          SEARCH / FILTER / SORT
+      =============================== */}
+
+      <Paper
+        elevation={0}
+
+        sx={{
+
+          mt: 3,
+          mb: 3,
+          p: 2,
+
+          borderRadius: 4,
+
+          border:
+            "1px solid #E5E7EB",
+
+          boxShadow:
+            "0 8px 24px rgba(15,23,42,.05)",
+
+        }}
+      >
+
+        <Box
+          sx={{
+
+            display: "flex",
+
+            alignItems:
+              "center",
+
+            gap: 1.5,
+
+            flexWrap: {
+              xs: "wrap",
+              md: "nowrap",
+            },
+
+          }}
+        >
+
+          {/* SEARCH */}
+
+          <TextField
+
+            fullWidth
+            size="small"
+
+            placeholder=
+              "Search patient, doctor, diagnosis..."
+
+            value={search}
+
+            onChange={(e) =>
+              setSearch(
+                e.target.value
+              )
+            }
+
+            InputProps={{
+              startAdornment: (
+
+                <InputAdornment
+                  position="start"
+                >
+
+                  <SearchRoundedIcon
+                    sx={{
+                      color:
+                        "#94A3B8",
+                    }}
+                  />
+
+                </InputAdornment>
+
+              ),
+            }}
+
+            sx={{
+
+              flex: 1,
+
+              minWidth: {
+                xs: "100%",
+                md: 300,
+              },
+
+              "& .MuiOutlinedInput-root": {
+
+                height: 42,
+
+                borderRadius: 3,
+
+                bgcolor:
+                  "#F8FAFC",
+
+                "& fieldset": {
+                  borderColor:
+                    "#E2E8F0",
+                },
+
+                "&:hover fieldset": {
+                  borderColor:
+                    "#14B8A6",
+                },
+
+                "&.Mui-focused fieldset": {
+                  borderColor:
+                    "#14B8A6",
+                },
+
+              },
+
+            }}
+
+          />
+
+
+          {/* FILTER */}
+
+          <TextField
+
+            select
+
+            size="small"
+
+            value={filter}
+
+            onChange={(e) =>
+              setFilter(
+                e.target.value
+              )
+            }
+
+            sx={{
+
+              width: {
+                xs: "100%",
+                sm: 180,
+                md: 180,
+              },
+
+              "& .MuiOutlinedInput-root": {
+
+                height: 42,
+
+                borderRadius: 3,
+
+              },
+
+            }}
+
+            InputProps={{
+              startAdornment: (
+
+                <InputAdornment
+                  position="start"
+                >
+
+                  <FilterListRoundedIcon
+                    sx={{
+                      color:
+                        "#64748B",
+                    }}
+                  />
+
+                </InputAdornment>
+
+              ),
+            }}
+
+          >
+
+            <MenuItem value="all">
+              All Discharges
+            </MenuItem>
+
+            <MenuItem value="completed">
+              Completed
+            </MenuItem>
+
+            <MenuItem value="pending">
+              Pending
+            </MenuItem>
+
+          </TextField>
+
+
+          {/* SORT */}
+
+          <TextField
+
+            select
+
+            size="small"
+
+            value={sort}
+
+            onChange={(e) =>
+              setSort(
+                e.target.value
+              )
+            }
+
+            sx={{
+
+              width: {
+                xs: "100%",
+                sm: 150,
+                md: 150,
+              },
+
+              "& .MuiOutlinedInput-root": {
+
+                height: 42,
+
+                borderRadius: 3,
+
+              },
+
+            }}
+
+          >
+
+            <MenuItem value="latest">
+              Latest
+            </MenuItem>
+
+            <MenuItem value="name">
+              Name A-Z
+            </MenuItem>
+
+            <MenuItem value="oldest">
+              Oldest
+            </MenuItem>
+
+          </TextField>
+
+
+          {/* CLEAR */}
+
+          {(search ||
+            filter !== "all" ||
+            sort !== "latest") && (
+
+            <Button
+
+              variant="text"
+
+              onClick={() => {
+
+                setSearch("");
+                setFilter("all");
+                setSort("latest");
+
+              }}
+
+              sx={{
+
+                height: 42,
+
+                minWidth: 70,
+
+                textTransform:
+                  "none",
+
+                color:
+                  "#0F766E",
+
+                fontWeight: 700,
+
+              }}
+
+            >
+
+              Clear
+
+            </Button>
+
+          )}
+
+        </Box>
+
+      </Paper>
+
+
+      {/* ==============================
+          TABLE
+      =============================== */}
+
+      {loading ? (
+
+        <Box
+          sx={{
+
+            height: 300,
+
+            display: "flex",
+
+            justifyContent:
+              "center",
+
+            alignItems:
+              "center",
+
+          }}
+        >
+
+          <CircularProgress
+            size={45}
+            thickness={4}
+          />
+
+        </Box>
+
+      ) : (
+
+        <TableContainer
+
+          component={Paper}
+
+          elevation={0}
+
+          sx={{
+
+            mt: 3,
+
+            borderRadius: 4,
+
+            border:
+              "1px solid #E2E8F0",
+
+            overflowX:
+              "auto",
+
+            boxShadow:
+              "0 8px 24px rgba(15,23,42,.05)",
+
+          }}
+
+        >
+
+          <Table
+
+            sx={{
+
+              width: "100%",
+
+              minWidth: 1050,
+
+              tableLayout:
+                "fixed",
+
+            }}
+
+          >
+
+            <TableHead>
+
+              <TableRow
+
+                sx={{
+
+                  bgcolor:
+                    "#F8FAFC",
+
+                  "& .MuiTableCell-head": {
+
+                    fontWeight:
+                      "700 !important",
+
+                    fontSize: 12,
+
+                    color:
+                      "#1E293B",
+
+                    textTransform:
+                      "uppercase",
+
+                    letterSpacing:
+                      ".5px",
+
+                    borderBottom:
+                      "1px solid #E2E8F0",
+
+                  },
+
+                }}
+
+              >
+
+                <TableCell
+                  sx={{
+                    width: "25%",
+                  }}
+                >
+                  PATIENT
+                </TableCell>
+
+
+                <TableCell
+                  sx={{
+                    width: "21%",
+                  }}
+                >
+                  DOCTOR
+                </TableCell>
+
+
+                <TableCell
+                  align="center"
+                  sx={{
+                    width: "14%",
+                  }}
+                >
+                  ADMISSION
+                </TableCell>
+
+
+                <TableCell
+                  align="center"
+                  sx={{
+                    width: "14%",
+                  }}
+                >
+                  DATE
+                </TableCell>
+
+
+                <TableCell
+                  sx={{
+                    width: "14%",
+                  }}
+                >
+                  DIAGNOSIS
+                </TableCell>
+
+
+                <TableCell
+                  align="center"
+                  sx={{
+                    width: "12%",
+                  }}
+                >
+                  STATUS
+                </TableCell>
+
+
+                <TableCell
+                  align="center"
+                  sx={{
+                    width: "12%",
+                  }}
+                >
+                  ACTIONS
+                </TableCell>
+
+              </TableRow>
+
+            </TableHead>
+
+
+            <TableBody>
+
+              {filteredDischarges.length === 0 ? (
+
+                <TableRow>
+
+                  <TableCell
+                    colSpan={7}
+                    align="center"
+                    sx={{
+                      py: 8,
+                    }}
+                  >
+
+                    <ExitToAppRoundedIcon
+                      sx={{
+                        fontSize: 60,
+                        color:
+                          "#CBD5E1",
+                      }}
+                    />
+
+                    <Typography
+                      mt={2}
+                      fontWeight={700}
+                    >
+                      No Discharges Found
+                    </Typography>
+
+                    <Typography
+                      color="text.secondary"
+                    >
+                      Try another search
+                      or filter.
+                    </Typography>
+
+                  </TableCell>
+
+                </TableRow>
+
+              ) : (
+
+                filteredDischarges.map(
+                  (item) => (
+
+                    <TableRow
+
+                      key={
+                        item._id
+                      }
+
+                      hover
+
+                      sx={{
+
+                        height: 78,
+
+                        "& td": {
+
+                          py: 1.5,
+
+                          px: 2,
+
+                          verticalAlign:
+                            "middle",
+
+                          borderBottom:
+                            "1px solid #EEF2F7",
+
+                        },
+
+                        "&:hover": {
+
+                          bgcolor:
+                            "#F8FAFC",
+
+                        },
+
+                      }}
+
+                    >
+
+                      {/* PATIENT */}
+
+                      <TableCell>
+
+                        <Box
+                          sx={{
+
+                            display:
+                              "flex",
+
+                            alignItems:
+                              "center",
+
+                            gap: 2,
+
+                          }}
+                        >
+
+                          <Avatar
+                            sx={{
+
+                              width: 40,
+                              height: 40,
+
+                              fontSize: 13,
+
+                              fontWeight: 700,
+
+                              color: "#fff",
+
+                              background:
+                                "linear-gradient(135deg,#2563EB,#3B82F6)",
+
+                              flexShrink: 0,
+
+                            }}
+                          >
+
+                            {
+                              item.patient
+                                ?.firstName
+                                ?.charAt(0)
+                            }
+
+                            {
+                              item.patient
+                                ?.lastName
+                                ?.charAt(0)
+                            }
+
+                          </Avatar>
+
+
+                          <Box
+                            sx={{
+                              minWidth: 0,
+                            }}
+                          >
+
+                            <Typography
+                              sx={{
+
+                                fontWeight: 700,
+
+                                fontSize: 14,
+
+                                color:
+                                  "#0F172A",
+
+                                overflow:
+                                  "hidden",
+
+                                textOverflow:
+                                  "ellipsis",
+
+                                whiteSpace:
+                                  "nowrap",
+
+                              }}
+                            >
+
+                              {
+                                item.patient
+                                  ?.firstName
+                              }{" "}
+
+                              {
+                                item.patient
+                                  ?.lastName
+                              }
+
+                            </Typography>
+
+
+                            <Typography
+                              sx={{
+
+                                fontSize: 12,
+
+                                color:
+                                  "#94A3B8",
+
+                                mt: .3,
+
+                              }}
+                            >
+
+                              Discharge ID:{" "}
+
+                              {
+                                item.dischargeId ||
+                                "-"
+                              }
+
+                            </Typography>
+
+                          </Box>
+
+                        </Box>
+
+                      </TableCell>
+
+
+                      {/* DOCTOR */}
+
+                      <TableCell>
+
+                        <Box
+                          sx={{
+
+                            display:
+                              "flex",
+
+                            alignItems:
+                              "center",
+
+                            gap: 1.5,
+
+                          }}
+                        >
+
+                          <Avatar
+                            sx={{
+
+                              width: 36,
+                              height: 36,
+
+                              bgcolor:
+                                "#ECFDF5",
+
+                              color:
+                                "#059669",
+
+                              fontSize: 13,
+
+                              fontWeight: 700,
+
+                              flexShrink: 0,
+
+                            }}
+                          >
+
+                            {
+                              item.doctor
+                                ?.name
+                                ?.charAt(0) ||
+                              "D"
+                            }
+
+                          </Avatar>
+
+
+                          <Box
+                            sx={{
+                              minWidth: 0,
+                            }}
+                          >
+
+                            <Typography
+                              sx={{
+
+                                fontWeight: 700,
+
+                                fontSize: 13,
+
+                                overflow:
+                                  "hidden",
+
+                                textOverflow:
+                                  "ellipsis",
+
+                                whiteSpace:
+                                  "nowrap",
+
+                              }}
+                            >
+
+                              Dr.{" "}
+
+                              {
+                                item.doctor
+                                  ?.name ||
+                                "-"
+                              }
+
+                            </Typography>
+
+
+                            <Typography
+                              sx={{
+
+                                fontSize: 11,
+
+                                color:
+                                  "#64748B",
+
+                                mt: .2,
+
+                              }}
+                            >
+                              Consultant
+                            </Typography>
+
+                          </Box>
+
+                        </Box>
+
+                      </TableCell>
+
+
+                      {/* ADMISSION */}
+
+                      <TableCell
+                        align="center"
+                      >
+
+                        <Box
+                          sx={{
+
+                            display:
+                              "inline-flex",
+
+                            px: 1.5,
+
+                            py: .6,
+
+                            borderRadius: 2,
+
+                            bgcolor:
+                              "#EFF6FF",
+
+                            border:
+                              "1px solid #BFDBFE",
+
+                            maxWidth:
+                              "100%",
+
+                          }}
+                        >
+
+                          <Typography
+                            sx={{
+
+                              fontWeight: 600,
+
+                              fontSize: 12,
+
+                              whiteSpace:
+                                "nowrap",
+
+                            }}
+                          >
+
+                            {
+                              item.admission
+                                ?.admissionId ||
+                              "-"
+                            }
+
+                          </Typography>
+
+                        </Box>
+
+                      </TableCell>
+
+
+                      {/* DATE */}
+
+                      <TableCell
+                        align="center"
+                      >
+
+                        <Box
+                          sx={{
+
+                            display:
+                              "inline-flex",
+
+                            px: 1.5,
+
+                            py: .6,
+
+                            borderRadius: 2,
+
+                            bgcolor:
+                              "#F8FAFC",
+
+                            border:
+                              "1px solid #E2E8F0",
+
+                          }}
+                        >
+
+                          <Typography
+                            sx={{
+
+                              fontWeight: 600,
+
+                              fontSize: 12,
+
+                              whiteSpace:
+                                "nowrap",
+
+                            }}
+                          >
+
+                            {
+                              item.dischargeDate
+
+                                ? new Date(
+                                    item.dischargeDate
+                                  ).toLocaleDateString(
+                                    "en-IN"
+                                  )
+
+                                : "-"
+
+                            }
+
+                          </Typography>
+
+                        </Box>
+
+                      </TableCell>
+
+
+                      {/* DIAGNOSIS */}
+
+                      <TableCell>
+
+                        <Box
+                          sx={{
+
+                            display:
+                              "inline-flex",
+
+                            alignItems:
+                              "center",
+
+                            px: 1.5,
+
+                            py: .6,
+
+                            borderRadius: 2,
+
+                            bgcolor:
+                              "#FFFBEB",
+
+                            border:
+                              "1px solid #FCD34D",
+
+                            maxWidth:
+                              "100%",
+
+                          }}
+                        >
+
+                          <Typography
+                            sx={{
+
+                              fontWeight: 600,
+
+                              fontSize: 12,
+
+                              color:
+                                "#92400E",
+
+                              whiteSpace:
+                                "nowrap",
+
+                              overflow:
+                                "hidden",
+
+                              textOverflow:
+                                "ellipsis",
+
+                            }}
+                          >
+
+                            {
+                              item.finalDiagnosis ||
+                              item.diagnosis ||
+                              "General Checkup"
+                            }
+
+                          </Typography>
+
+                        </Box>
+
+                      </TableCell>
+
+
+                      {/* STATUS */}
+
+                      <TableCell
+                        align="center"
+                      >
+
+                        <Box
+                          sx={{
+
+                            display:
+                              "flex",
+
+                            justifyContent:
+                              "center",
+
+                          }}
+                        >
+
+                          <StatusChip
+                            status={
+                              item.status ||
+                              "Completed"
+                            }
+                          />
+
+                        </Box>
+
+                      </TableCell>
+
+
+                      {/* ACTIONS */}
+
+                      <TableCell
+                        align="center"
+                      >
+
+                        <Box
+                          sx={{
+
+                            display:
+                              "flex",
+
+                            justifyContent:
+                              "center",
+
+                          }}
+                        >
+
+                          <ActionButtons
+
+                            onView={() =>
+                              handleView(
+                                item
+                              )
+                            }
+
+                            onEdit={() =>
+                              handleEdit(
+                                item
+                              )
+                            }
+
+                            onDelete={() =>
+                              handleDelete(
+                                item._id
+                              )
+                            }
+
+                          />
+
+                        </Box>
+
+                      </TableCell>
+
+                    </TableRow>
+
+                  )
+
+                )
+
+              )}
+
+            </TableBody>
+
+          </Table>
+
+        </TableContainer>
+
+      )}
+
+
+      {/* ==============================
+          ADD / EDIT DIALOG
+      =============================== */}
+
+      <FormDialog
+
+        open={open}
+
+        onClose={() =>
+          setOpen(false)
+        }
+
+        title={
+          editingId
+            ? "Edit Discharge"
+            : "New Discharge"
+        }
+
+        submitText={
+          editingId
+            ? "Update Discharge"
+            : "Save Discharge"
+        }
+
+        onSubmit={
+          handleSubmit
+        }
+
+      >
+
+        <Box
+          sx={{
+
+            display:
+              "grid",
+
+            gridTemplateColumns: {
+              xs: "1fr",
+              md: "1fr 1fr",
+            },
+
+            gap: 2.5,
+
+            mt: 3,
+
+          }}
+        >
+
+          <TextField
+            select
+            fullWidth
+            label="Admission"
+            name="admission"
+
+            value={
+              formData.admission
+            }
+
+            onChange={
+              handleChange
+            }
+
+            sx={
+              textFieldStyle
+            }
+          >
+
+            {admissionsList.map(
+              (admission) => (
+
+                <MenuItem
+                  key={
+                    admission._id
+                  }
+
+                  value={
+                    admission._id
+                  }
+                >
+
+                  {
+                    admission.admissionId
+                  }
+
+                </MenuItem>
+
+              )
+            )}
+
+          </TextField>
+
+
+          <TextField
+            select
+            fullWidth
+            label="Patient"
+            name="patient"
+
+            value={
+              formData.patient
+            }
+
+            onChange={
+              handleChange
+            }
+
+            sx={
+              textFieldStyle
+            }
+          >
+
+            {patients.map(
+              (patient) => (
+
+                <MenuItem
+                  key={
+                    patient._id
+                  }
+
+                  value={
+                    patient._id
+                  }
+                >
+
+                  {
+                    patient.firstName
+                  }{" "}
+
+                  {
+                    patient.lastName
+                  }
+
+                </MenuItem>
+
+              )
+            )}
+
+          </TextField>
+
+
+          <TextField
+            select
+            fullWidth
+            label="Doctor"
+            name="doctor"
+
+            value={
+              formData.doctor
+            }
+
+            onChange={
+              handleChange
+            }
+
+            sx={
+              textFieldStyle
+            }
+          >
+
+            {doctors.map(
+              (doctor) => (
+
+                <MenuItem
+                  key={
+                    doctor._id
+                  }
+
+                  value={
+                    doctor._id
+                  }
+                >
+
+                  {
+                    doctor.name
+                  }
+
+                </MenuItem>
+
+              )
+            )}
+
+          </TextField>
+
+
+          <TextField
+            fullWidth
+            label="Diagnosis"
+            name="diagnosis"
+
+            value={
+              formData.diagnosis
+            }
+
+            onChange={
+              handleChange
+            }
+
+            sx={
+              textFieldStyle
+            }
+          />
+
+
+          <Box>
+
+            <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#475569",
+                mb: 1,
+              }}
+            >
+              Treatment Given
+            </Typography>
+
+            <TextField
+              fullWidth
+              label="Enter given Treatment"
+
+              name="treatmentGiven"
+
+              value={
+                formData.treatmentGiven
+              }
+
+              onChange={
+                handleChange
+              }
+
+              sx={
+                textFieldStyle
+              }
+            />
+
+          </Box>
+
+
+          <Box>
+
+            <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#475569",
+                mb: 1,
+              }}
+            >
+              Follow Up Date
+            </Typography>
+
+            <TextField
+              fullWidth
+              type="date"
+
+              name="followUpDate"
+
+              value={
+                formData.followUpDate
+              }
+
+              onChange={
+                handleChange
+              }
+
+              sx={
+                textFieldStyle
+              }
+
+            />
+
+          </Box>
+
+
+          <TextField
+            fullWidth
+
+            label="Medications"
+
+            name="medications"
+
+            value={
+              formData.medications
+            }
+
+            onChange={
+              handleChange
+            }
+
+            placeholder=
+              "Paracetamol, Vitamin C, Antibiotic"
+
+            sx={{
+
+              ...textFieldStyle,
+
+              gridColumn: {
+                xs: "span 1",
+                md: "span 2",
+              },
+
+            }}
+
+          />
+
+
+          <TextField
+            fullWidth
+
+            multiline
+            rows={4}
+
+            label="Summary"
+
+            name="summary"
+
+            value={
+              formData.summary
+            }
+
+            onChange={
+              handleChange
+            }
+
+            sx={{
+
+              ...textFieldStyle,
+
+              gridColumn: {
+                xs: "span 1",
+                md: "span 2",
+              },
+
+            }}
+
+          />
+
+        </Box>
+
+      </FormDialog>
+
+
+      {/* ==============================
+          VIEW DIALOG
+      =============================== */}
+
+      <FormDialog
+
+        open={viewOpen}
+
+        onClose={() =>
+          setViewOpen(false)
+        }
+
+        title="Discharge Details"
+
+        hideSubmit
+
+      >
+
+        <Box
+          sx={{
+
+            display:
+              "grid",
+
+            gridTemplateColumns: {
+              xs: "1fr",
+              md: "1fr 1fr",
+            },
+
+            gap: 2.5,
+
+            mt: 3,
+
+          }}
+        >
+
+          <Box sx={viewBoxStyle}>
+
+            <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#94A3B8",
+              }}
+            >
+              Discharge ID
+            </Typography>
+
+            <Typography
+              mt={.5}
+              fontWeight={700}
+            >
+
+              {
+                selectedDischarge
+                  ?.dischargeId ||
+                "-"
+              }
+
+            </Typography>
+
+          </Box>
+
+
+          <Box sx={viewBoxStyle}>
+
+            <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#94A3B8",
+              }}
+            >
+              Admission
+            </Typography>
+
+            <Typography
+              mt={.5}
+              fontWeight={700}
+            >
+
+              {
+                selectedDischarge
+                  ?.admission
+                  ?.admissionId ||
+                "-"
+              }
+
+            </Typography>
+
+          </Box>
+
+
+          <Box sx={viewBoxStyle}>
+
+            <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#94A3B8",
+              }}
+            >
+              Patient
+            </Typography>
+
+            <Typography
+              mt={.5}
+              fontWeight={700}
+            >
+
+              {
+                selectedDischarge
+                  ?.patient
+                  ?.firstName
+              }{" "}
+
+              {
+                selectedDischarge
+                  ?.patient
+                  ?.lastName
+              }
+
+            </Typography>
+
+          </Box>
+
+
+          <Box sx={viewBoxStyle}>
+
+            <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#94A3B8",
+              }}
+            >
+              Doctor
+            </Typography>
+
+            <Typography
+              mt={.5}
+              fontWeight={700}
+            >
+
+              {
+                selectedDischarge
+                  ?.doctor
+                  ?.name ||
+                "-"
+              }
+
+            </Typography>
+
+          </Box>
+
+
+          <Box sx={viewBoxStyle}>
+
+            <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#94A3B8",
+              }}
+            >
+              Diagnosis
+            </Typography>
+
+            <Typography
+              mt={.5}
+              fontWeight={700}
+            >
+
+              {
+                selectedDischarge
+                  ?.diagnosis ||
+                selectedDischarge
+                  ?.finalDiagnosis ||
+                "-"
+              }
+
+            </Typography>
+
+          </Box>
+
+
+          <Box sx={viewBoxStyle}>
+
+            <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#94A3B8",
+              }}
+            >
+              Treatment Given
+            </Typography>
+
+            <Typography
+              mt={.5}
+              fontWeight={700}
+            >
+
+              {
+                selectedDischarge
+                  ?.treatmentGiven ||
+                "-"
+              }
+
+            </Typography>
+
+          </Box>
+
+
+          <Box sx={viewBoxStyle}>
+
+            <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#94A3B8",
+              }}
+            >
+              Medications
+            </Typography>
+
+            <Typography
+              mt={.5}
+              fontWeight={700}
+            >
+
+              {
+                selectedDischarge
+                  ?.medications
+                  ?.join(", ") ||
+                "-"
+              }
+
+            </Typography>
+
+          </Box>
+
+
+          <Box sx={viewBoxStyle}>
+
+            <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#94A3B8",
+              }}
+            >
+              Follow Up Date
+            </Typography>
+
+            <Typography
+              mt={.5}
+              fontWeight={700}
+            >
+
+              {
+                selectedDischarge
+                  ?.followUpDate
+
+                  ? new Date(
+                      selectedDischarge
+                        .followUpDate
+                    ).toLocaleDateString(
+                      "en-IN"
+                    )
+
+                  : "-"
+              }
+
+            </Typography>
+
+          </Box>
+
+
+          <Box
+            sx={{
+
+              gridColumn: {
+                xs: "span 1",
+                md: "span 2",
+              },
+
+              ...viewBoxStyle,
+
+            }}
+          >
+
+            <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#94A3B8",
+              }}
+            >
+              Summary
+            </Typography>
+
+            <Typography mt={.5}>
+
+              {
+                selectedDischarge
+                  ?.summary ||
+                "-"
+              }
+
+            </Typography>
+
+          </Box>
+
+
+          <Box
+            sx={{
+
+              gridColumn: {
+                xs: "span 1",
+                md: "span 2",
+              },
+
+              ...viewBoxStyle,
+
+            }}
+          >
+
+            <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#94A3B8",
+                mb: 1,
+              }}
+            >
+              Status
+            </Typography>
+
+            <StatusChip
+              status={
+                selectedDischarge
+                  ?.status ||
+                "Completed"
+              }
+            />
+
+          </Box>
+
+        </Box>
+
+      </FormDialog>
+
+    </DashboardLayout>
+
+  );
 
 }
 
-};
-
-return ( <DashboardLayout>
-
-  <PageHeader
-  title="Discharges"
-  subtitle="Manage patient discharge summaries"
-  buttonText="New Discharge"
-  onButtonClick={() => {
-
-setEditingId(null);
-
-setFormData({
-
-admission:"",
-patient:"",
-doctor:"",
-diagnosis:"",
-treatmentGiven:"",
-medications:"",
-followUpDate:"",
-summary:"",
-
-});
-
-setOpen(true);
-
-}}
-/>
-
-<ModuleStats stats={stats} />
-
-<SearchBar
-placeholder="Search patient, doctor or diagnosis..."
-value={search}
-onChange={(e)=>setSearch(e.target.value)}
-/>
-
- {loading ? (
-
-<Box
-textAlign="center"
-mt={8}
->
-<CircularProgress />
-</Box>
-
-) : (
-
-<TableContainer
-component={Paper}
-elevation={0}
-sx={{
-mt:3,
-borderRadius:4,
-border:"1px solid #E2E8F0",
-overflow:"hidden",
-}}
->
-
-<Table
-sx={{
-width:"100%",
-tableLayout:"fixed",
-}}
->
-
-<TableHead>
-
-<TableRow
-sx={{
-bgcolor:"#F8FAFC",
-
-"& .MuiTableCell-head":{
-fontWeight:"700 !important",
-fontSize:"12px",
-color:"#1E293B",
-textTransform:"uppercase",
-letterSpacing:".5px",
-},
-}}
->
-
-<TableCell sx={{width:"28%", pl:6, align:"center"}}>
-PATIENT
-</TableCell>
-
-<TableCell sx={{width:"36%", pl:6, align:"center"}}>
-DOCTOR
-</TableCell>
-
-<TableCell align="center" sx={{width:"22%"}}>
-ADMISSION
-</TableCell>
-
-<TableCell align="center" sx={{width:"42%"}}>
-DATE
-</TableCell>
-
-<TableCell sx={{width:"30%", pl:6, align:"center"}}>
-DIAGNOSIS
-</TableCell>
-
-<TableCell align="center" sx={{width:"26%"}}>
-STATUS
-</TableCell>
-
-<TableCell align="center" sx={{width:"30%"}}>
-ACTIONS
-</TableCell>
-
-</TableRow>
-
-</TableHead>
-
-<TableBody>
-
-{filteredDischarges.map((item) => (
-
-<TableRow
-key={item._id}
-hover
-sx={{
-height:78,
-
-"& td":{
-py:2,
-px:2.5,
-verticalAlign:"middle",
-borderBottom:"1px solid #EEF2F7",
-},
-
-"&:hover":{
-background:"#F8FAFC",
-},
-}}
->
-
-{/*parent*/}
-<TableCell>
-
-<Box
-sx={{
-display:"flex",
-alignItems:"center",
-gap:2,
-}}
->
-
-<Avatar
-sx={{
-width:42,
-height:42,
-fontSize:14,
-fontWeight:700,
-color:"#fff",
-background:"linear-gradient(135deg,#2563EB,#3B82F6)",
-flexShrink:0,
-}}
->
-{item.patient?.firstName?.charAt(0)}
-{item.patient?.lastName?.charAt(0)}
-</Avatar>
-
-<Box>
-
-<Typography
-sx={{
-fontWeight:700,
-fontSize:15,
-color:"#0F172A",
-lineHeight:1.2,
-}}
->
-{item.patient?.firstName} {item.patient?.lastName}
-</Typography>
-
-<Typography
-sx={{
-fontSize:12,
-color:"#94A3B8",
-mt:.3,
-}}
->
-Discharge ID : {item.dischargeId}
-</Typography>
-
-</Box>
-
-</Box>
-
-</TableCell>
-
-{/* Doctor */}
-
-<TableCell>
-
-<Box
-sx={{
-display:"flex",
-alignItems:"center",
-gap:2,
-}}
->
-
-<Avatar
-sx={{
-width:38,
-height:38,
-bgcolor:"#ECFDF5",
-color:"#059669",
-fontSize:13,
-fontWeight:700,
-flexShrink:0,
-}}
->
-{item.doctor?.name?.charAt(0)}
-</Avatar>
-
-<Box>
-
-<Typography
-sx={{
-fontWeight:700,
-fontSize:14,
-lineHeight:1.3,
-}}
->
-Dr. {item.doctor?.name}
-</Typography>
-
-<Typography
-sx={{
-fontSize:12,
-color:"#64748B",
-mt:.3,
-}}
->
-Consultant
-</Typography>
-
-</Box>
-
-</Box>
-
-</TableCell>
-
-{/* Admission */}
-
-<TableCell align="center">
-
-<Box
-display="flex"
-justifyContent="center"
->
-
-<Box
-sx={{
-display:"inline-flex",
-px:2,
-py:.7,
-borderRadius:2,
-bgcolor:"#EFF6FF",
-border:"1px solid #BFDBFE",
-}}
->
-
-<Typography
-fontWeight={600}
-fontSize={13}
->
-{item.admission?.admissionId}
-</Typography>
-
-</Box>
-
-</Box>
-
-</TableCell>
-
-<TableCell align="center">
-
-<Box
-display="flex"
-justifyContent="center"
->
-
-<Box
-sx={{
-display:"inline-flex",
-px:2,
-py:.7,
-borderRadius:2,
-bgcolor:"#F8FAFC",
-border:"1px solid #E2E8F0",
-}}
->
-
-<Typography
-fontWeight={600}
-fontSize={13}
->
-{item.dischargeDate
-? new Date(item.dischargeDate).toLocaleDateString()
-: "-"}
-</Typography>
-
-</Box>
-
-</Box>
-
-</TableCell>
-
-{/* Diagnosis */}
-
-<TableCell>
-
-<Box
-sx={{
-display:"inline-flex",
-alignItems:"center",
-gap:1,
-px:2,
-py:.7,
-borderRadius:2,
-bgcolor:"#FFFBEB",
-border:"1px solid #FCD34D",
-minWidth:130,
-maxWidth:180,
-}}
->
-
-<Typography
-sx={{
-fontWeight:600,
-fontSize:13,
-color:"#92400E",
-whiteSpace:"nowrap",
-overflow:"hidden",
-textOverflow:"ellipsis",
-}}
->
-{item.finalDiagnosis || "General Checkup"}
-</Typography>
-
-</Box>
-
-</TableCell>
-
-<TableCell align="center">
-
-<Box
-display="flex"
-justifyContent="center"
->
-
-<StatusChip
-status={item.status || "Completed"}
-/>
-
-</Box>
-
-</TableCell>
-
-<TableCell align="center">
-
-<Box
-display="flex"
-justifyContent="center"
->
-
-<ActionButtons
-onView={() => handleView(item)}
-onEdit={() => handleEdit(item)}
-onDelete={() => handleDelete(item._id)}
-/>
-
-</Box>
-
-</TableCell>
-
-</TableRow>
-
-))}
-
-</TableBody>
-
-</Table>
-
-</TableContainer>
-
-)}
-
-<FormDialog
-open={open}
-onClose={() => setOpen(false)}
-title={editingId ? "Edit Discharge" : "New Discharge"}
-submitText={editingId ? "Update Discharge" : "Save Discharge"}
-onSubmit={handleSubmit}
->
-
-<Box
-sx={{
-display:"grid",
-gridTemplateColumns:{
-xs:"1fr",
-md:"1fr 1fr",
-},
-gap:2.5,
-mt:3,
-}}
->
-
-<TextField
-select
-label="Admission"
-name="admission"
-value={formData.admission}
-onChange={handleChange}
-sx={textFieldStyle}
->
-
-{admissionsList.map((admission)=>(
-
-<MenuItem
-key={admission._id}
-value={admission._id}
->
-{admission.admissionId}
-</MenuItem>
-
-))}
-
-</TextField>
-
-<TextField
-select
-label="Patient"
-name="patient"
-value={formData.patient}
-onChange={handleChange}
-sx={textFieldStyle}
->
-
-{patients.map((patient)=>(
-
-<MenuItem
-key={patient._id}
-value={patient._id}
->
-
-{patient.firstName} {patient.lastName}
-
-</MenuItem>
-
-))}
-
-</TextField>
-
-<TextField
-select
-label="Doctor"
-name="doctor"
-value={formData.doctor}
-onChange={handleChange}
-sx={textFieldStyle}
->
-
-{doctors.map((doctor)=>(
-
-<MenuItem
-key={doctor._id}
-value={doctor._id}
->
-
-{doctor.name}
-
-</MenuItem>
-
-))}
-
-</TextField>
-
-<TextField
-label="Diagnosis"
-name="diagnosis"
-value={formData.diagnosis}
-onChange={handleChange}
-sx={textFieldStyle}
-/>
-
-<Box>
-
-  <Typography
-    sx={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: "#475569",
-      mb: 1,
-    }}
-  >
-    Treatment Given
-  </Typography>
-
-  <TextField
-    fullWidth
-    label="Enter given Treatment"
-    name="treatmentGiven"
-    value={formData.treatmentGiven}
-    onChange={handleChange}
-    sx={textFieldStyle}
-/>
-
-</Box>
-
-<Box>
-
-  <Typography
-    sx={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: "#475569",
-      mb: 1,
-    }}
-  >
-    Follow Up Date
-  </Typography>
-
-  <TextField
-    fullWidth
-    type="date"
-    name="followUpDate"
-    value={formData.followUpDate}
-    onChange={handleChange}
-    sx={textFieldStyle}
-  />
-
-</Box>
-
-<TextField
-label="Medications"
-name="medications"
-value={formData.medications}
-onChange={handleChange}
-placeholder="Paracetamol, Vitamin C, Antibiotic"
-sx={{
-...textFieldStyle,
-gridColumn:{
-xs:"span 1",
-md:"span 2",
-},
-}}
-/>
-
-<TextField
-multiline
-rows={4}
-label="Summary"
-name="summary"
-value={formData.summary}
-onChange={handleChange}
-sx={{
-...textFieldStyle,
-gridColumn:{
-xs:"span 1",
-md:"span 2",
-},
-}}
-/>
-
-</Box>
-
-</FormDialog>
-
-<FormDialog
-open={viewOpen}
-onClose={() => setViewOpen(false)}
-title="Discharge Details"
-hideSubmit
->
-
-<Box
-sx={{
-display:"grid",
-gridTemplateColumns:{
-xs:"1fr",
-md:"1fr 1fr",
-},
-gap:2.5,
-mt:3,
-}}
->
-
-<Box
-sx={{
-p:2,
-border:"1px solid #E2E8F0",
-borderRadius:2,
-bgcolor:"#F8FAFC",
-}}
->
-
-<Typography
-sx={{
-fontSize:13,
-fontWeight:700,
-color:"#94A3B8",
-}}
->
-Discharge ID
-</Typography>
-
-<Typography
-mt={.5}
-fontWeight={700}
->
-{selectedDischarge?.dischargeId}
-</Typography>
-
-</Box>
-
-<Box
-sx={{
-p:2,
-border:"1px solid #E2E8F0",
-borderRadius:2,
-bgcolor:"#F8FAFC",
-}}
->
-
-<Typography
-sx={{
-fontSize:13,
-fontWeight:700,
-color:"#94A3B8",
-}}
->
-Admission
-</Typography>
-
-<Typography
-mt={.5}
-fontWeight={700}
->
-{selectedDischarge?.admission?.admissionId}
-</Typography>
-
-</Box>
-
-<Box
-sx={{
-p:2,
-border:"1px solid #E2E8F0",
-borderRadius:2,
-bgcolor:"#F8FAFC",
-}}
->
-
-<Typography
-sx={{
-fontSize:13,
-fontWeight:700,
-color:"#94A3B8",
-}}
->
-Patient
-</Typography>
-
-<Typography
-mt={.5}
-fontWeight={700}
->
-{selectedDischarge?.patient?.firstName}{" "}
-{selectedDischarge?.patient?.lastName}
-</Typography>
-
-</Box>
-
-<Box
-sx={{
-p:2,
-border:"1px solid #E2E8F0",
-borderRadius:2,
-bgcolor:"#F8FAFC",
-}}
->
-
-<Typography
-sx={{
-fontSize:13,
-fontWeight:700,
-color:"#94A3B8",
-}}
->
-Doctor
-</Typography>
-
-<Typography
-mt={.5}
-fontWeight={700}
->
-{selectedDischarge?.doctor?.name}
-</Typography>
-
-</Box>
-
-<Box
-sx={{
-p:2,
-border:"1px solid #E2E8F0",
-borderRadius:2,
-bgcolor:"#F8FAFC",
-}}
->
-
-<Typography
-sx={{
-fontSize:13,
-fontWeight:700,
-color:"#94A3B8",
-}}
->
-Diagnosis
-</Typography>
-
-<Typography
-mt={.5}
-fontWeight={700}
->
-{selectedDischarge?.diagnosis}
-</Typography>
-
-</Box>
-
-<Box
-sx={{
-p:2,
-border:"1px solid #E2E8F0",
-borderRadius:2,
-bgcolor:"#F8FAFC",
-}}
->
-
-<Typography
-sx={{
-fontSize:13,
-fontWeight:700,
-color:"#94A3B8",
-}}
->
-Treatment Given
-</Typography>
-
-<Typography
-mt={.5}
-fontWeight={700}
->
-{selectedDischarge?.treatmentGiven}
-</Typography>
-
-</Box>
-
-<Box
-sx={{
-p:2,
-border:"1px solid #E2E8F0",
-borderRadius:2,
-bgcolor:"#F8FAFC",
-}}
->
-
-<Typography
-sx={{
-fontSize:13,
-fontWeight:700,
-color:"#94A3B8",
-}}
->
-Medications
-</Typography>
-
-<Typography
-mt={.5}
-fontWeight={700}
->
-{selectedDischarge?.medications?.join(", ") || "-"}
-</Typography>
-
-</Box>
-
-<Box
-sx={{
-p:2,
-border:"1px solid #E2E8F0",
-borderRadius:2,
-bgcolor:"#F8FAFC",
-}}
->
-
-<Typography
-sx={{
-fontSize:13,
-fontWeight:700,
-color:"#94A3B8",
-}}
->
-Follow Up Date
-</Typography>
-
-<Typography
-mt={.5}
-fontWeight={700}
->
-{selectedDischarge?.followUpDate
-? new Date(selectedDischarge.followUpDate).toLocaleDateString()
-: "-"}
-</Typography>
-
-</Box>
-
-<Box
-sx={{
-gridColumn:{
-xs:"span 1",
-md:"span 2",
-},
-p:2,
-border:"1px solid #E2E8F0",
-borderRadius:2,
-bgcolor:"#F8FAFC",
-}}
->
-
-<Typography
-sx={{
-fontSize:13,
-fontWeight:700,
-color:"#94A3B8",
-}}
->
-Summary
-</Typography>
-
-<Typography
-mt={.5}
->
-{selectedDischarge?.summary || "-"}
-</Typography>
-
-</Box>
-
-</Box>
-
-</FormDialog>
-
-</DashboardLayout>
-
-);
-}
 
 export default Discharges;

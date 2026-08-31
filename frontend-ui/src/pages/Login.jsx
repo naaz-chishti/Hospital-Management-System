@@ -30,6 +30,14 @@ function Login() {
 
   const navigate = useNavigate();
 
+  const handleKeyPress = (e) => {
+  if (e.key === "Enter") {
+    handleLogin();
+  }
+};
+
+const [loading, setLoading] = useState(false);
+
   const [showPassword, setShowPassword] = useState(false);
 
   const [email, setEmail] = useState("");
@@ -37,6 +45,8 @@ function Login() {
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
+
+    setLoading(true);
 
     try {
 
@@ -83,6 +93,32 @@ overflow:"hidden",
 }}
 >
 
+  <Box
+sx={{
+position: "absolute",
+top: -120,
+left: -120,
+width: 320,
+height: 320,
+borderRadius: "50%",
+background: "rgba(20,184,166,.18)",
+filter: "blur(90px)",
+}}
+/>
+
+<Box
+sx={{
+position: "absolute",
+bottom: -120,
+right: -120,
+width: 360,
+height: 360,
+borderRadius: "50%",
+background: "rgba(59,130,246,.16)",
+filter: "blur(110px)",
+}}
+/>
+
 <Box
 sx={{
 position:"absolute",
@@ -93,13 +129,45 @@ background:"rgba(8,24,39,.78)",
 
 <Box
 sx={{
-position:"relative",
-zIndex:2,
-display:"flex",
-alignItems:"center",
-justifyContent:"space-between",
-width:"90%",
-maxWidth:1250,
+position: "relative",
+zIndex: 2,
+
+width: "100%",
+height: "100%",
+
+display: "flex",
+
+flexDirection: {
+xs: "column",
+lg: "row",
+},
+
+justifyContent: "center",
+
+alignItems: "center",
+
+gap: {
+xs: 4,
+md: 6,
+lg: 10,
+},
+
+px:{
+xs:3,
+sm:4,
+md:6,
+lg:8,
+},
+
+py: {
+xs: 4,
+sm: 5,
+md: 6,
+},
+
+maxWidth: "1400px",
+
+mx: "auto",
 }}
 >
 
@@ -107,9 +175,22 @@ maxWidth:1250,
 
 <Box
 sx={{
-color:"#fff",
-width:"48%",
-pr:6,
+display: {
+xs: "none",
+lg: "flex",
+},
+
+flex: 1,
+
+justifyContent: "center",
+
+alignItems: "center",
+
+flexDirection: "column",
+
+textAlign: "center",
+
+maxWidth: 520,
 }}
 >
 
@@ -131,95 +212,176 @@ pr:6,
   />
 
   <Typography
-    align="center"
-    sx={{
-      fontSize: 62,
-      fontWeight: 600,
-      lineHeight: 1.05,
-      color: "#fff",
-    }}
-  >
-    Hospital
-    <br />
-    Management
-    <br />
-    System
-  </Typography>
+sx={{
+fontWeight:800,
+
+lineHeight:1.05,
+
+fontSize:{
+lg:68,
+xl:74,
+},
+
+letterSpacing:"-2px",
+
+color:"#fff",
+}}
+>
+Hospital
+<br/>
+Management
+<br/>
+System
+</Typography>
 
 </Box>
 
 <Typography
-fontSize={20}
-color="rgba(255,255,255,.85)"
-mb={5}
-  align="center"
-    sx={{
-      fontSize: 16,
-      fontWeight: 500,
-      lineHeight: 1.05,
-      color: "#fff",
-    }}
+sx={{
+mt:3,
+
+fontSize:22,
+
+fontWeight:400,
+
+color:"rgba(255,255,255,.88)",
+
+lineHeight:1.7,
+
+maxWidth:500,
+}}
 >
 
-Smart, Secure and Modern Healthcare Management Platform
+Modern Hospital ERP
+designed to simplify patient care,
+billing, diagnostics,
+pharmacy and administration.
 
 </Typography>
 
 <Box
-display="flex"
-flexDirection="column"
-gap={2}
+sx={{
+mt:6,
+
+display:"grid",
+
+gridTemplateColumns:"1fr 1fr",
+
+gap:2,
+
+maxWidth:560,
+}}
 >
 
-<Typography  align="center"
-    sx={{
-      fontSize: 16,
-      fontWeight: 500,
-      lineHeight: 1.05,
-      color: "#fff",
-    }}>✔ Patient Management</Typography>
+{[
+"Patient Management",
+"Doctor Scheduling",
+"Laboratory",
+"Radiology",
+"Billing",
+"Pharmacy",
+"Insurance",
+"Analytics",
+].map((item)=>(
 
-<Typography align="center"
-    sx={{
-      fontSize: 16,
-      fontWeight: 500,
-      lineHeight: 1.05,
-      color: "#fff",
-    }}>✔ OPD & IPD Management</Typography>
+<Box
+key={item}
+sx={{
+display:"flex",
+alignItems:"center",
+gap:1.5,
+}}
+>
 
-<Typography align="center"
-    sx={{
-      fontSize: 16,
-      fontWeight: 500,
-      lineHeight: 1.05,
-      color: "#fff",
-    }}>✔ Laboratory & Imaging</Typography>
+<Box
+sx={{
+width:12,
+height:12,
+borderRadius:"50%",
+bgcolor:"#14B8A6",
 
-<Typography align="center"
-    sx={{
-      fontSize: 16,
-      fontWeight: 500,
-      lineHeight: 1.05,
-      color: "#fff",
-    }}>✔ Billing & Insurance</Typography>
+boxShadow:"0 0 15px #14B8A6",
+}}
+/>
 
-<Typography align="center"
-    sx={{
-      fontSize: 16,
-      fontWeight: 500,
-      lineHeight: 1.05,
-      color: "#fff",
-    }}>✔ Pharmacy Management</Typography>
+<Typography
+sx={{
+fontSize:17,
+fontWeight:500,
+color:"#fff",
+}}
+>
 
-<Typography align="center"
-    sx={{
-      fontSize: 16,
-      fontWeight: 500,
-      lineHeight: 1.05,
-      color: "#fff",
-    }}>✔ Reports & Analytics</Typography>
+{item}
+
+</Typography>
 
 </Box>
+
+))}
+</Box>
+
+</Box>
+
+<Box
+sx={{
+display:{
+xs:"flex",
+lg:"none",
+},
+flexDirection:"column",
+alignItems:"center",
+textAlign:"center",
+mb:3,
+color:"#fff",
+}}
+>
+
+  <Box
+sx={{
+display: "inline-flex",
+alignItems: "center",
+px: 2,
+py: 0.6,
+mb: 2,
+borderRadius: "999px",
+background: "rgba(20,184,166,.12)",
+border: "1px solid rgba(20,184,166,.35)",
+}}
+>
+<Typography
+sx={{
+fontSize: 13,
+fontWeight: 700,
+color: "#0F766E",
+letterSpacing: 0.5,
+}}
+>
+SECURE LOGIN
+</Typography>
+</Box>
+
+<LocalHospital
+sx={{
+fontSize:60,
+color:"#14B8A6",
+mb:2,
+}}
+/>
+
+<Typography
+fontWeight={700}
+fontSize={34}
+>
+HMS ERP
+</Typography>
+
+<Typography
+fontSize={16}
+color="#CBD5E1"
+>
+Hospital Management System
+</Typography>
 
 </Box>
 
@@ -228,59 +390,113 @@ gap={2}
 <Card
 elevation={0}
 sx={{
-width:460,
-borderRadius:6,
-backdropFilter:"blur(20px)",
-background:"rgba(255,255,255,.92)",
-boxShadow:"0 25px 60px rgba(0,0,0,.35)",
+width: "100%",
+maxWidth:{
+xs:"100%",
+sm:420,
+md:460,
+animation: "fadeUp .6s ease",
+"@keyframes fadeUp": {
+  from: {
+    opacity: 0,
+    transform: "translateY(25px)",
+  },
+  to: {
+    opacity: 1,
+    transform: "translateY(0)",
+  },
+},
+transition: "all .35s ease",
+
+"&:hover": {
+  transform: "translateY(-5px)",
+},
+},
+
+mx: "auto",
+
+borderRadius: {
+xs: 4,
+md: 6,
+},
+
+background:
+"linear-gradient(180deg,rgba(255,255,255,.96),rgba(248,250,252,.96))",
+
+backdropFilter: "blur(18px)",
+
+boxShadow:
+"0 30px 80px rgba(15,23,42,.30)",
+border:"1px solid rgba(255,255,255,.35)",
+
+overflow: "hidden",
 }}
 >
 
 <CardContent
 sx={{
-p:5,
+p: {
+xs: 3,
+sm: 4,
+md: 5,
+},
+
+display: "flex",
+
+flexDirection: "column",
+
+gap: 1,
 }}
 >
 
 <Box
-textAlign="center"
-mb={3}
+sx={{
+textAlign: "center",
+mb: 3,
+}}
 >
 
 <LocalHospital
 sx={{
-fontSize:55,
-color:"#14B8A6",
+fontSize:64,
+color:"#0F766E",
 }}
 />
 
 <Typography
-variant="h4"
-fontWeight={700}
-mt={1}
+sx={{
+fontWeight: 800,
+fontSize: {
+xs: 28,
+sm: 34,
+md: 38,
+},
+color: "#0F172A",
+}}
 >
-
-Welcome Back 👋
-
+Welcome Back
 </Typography>
 
 <Typography
-color="text.secondary"
-mt={1}
+sx={{
+mt: 1,
+fontSize: 16,
+color: "#64748B",
+}}
 >
-
-Sign in to continue
-
+Sign in to your HMS ERP account
 </Typography>
 
 </Box>
 
 <TextField
 fullWidth
-label="Email Address"
+label="Work Email"
 margin="normal"
 value={email}
+autoComplete="email"
 onChange={(e)=>setEmail(e.target.value)}
+onKeyDown={handleKeyPress}
 InputProps={{
 startAdornment:(
 <InputAdornment position="start">
@@ -288,15 +504,45 @@ startAdornment:(
 </InputAdornment>
 ),
 }}
-/>
+sx={{
+mt:2,
+
+"& .MuiOutlinedInput-root":{
+
+height:56,
+
+borderRadius:3,
+
+background:"#F8FAFC",
+
+transition:"0.3s",
+
+"&:hover":{
+
+background:"#fff",
+
+},
+
+"&.Mui-focused":{
+
+background:"#fff",
+
+boxShadow:"0 0 0 4px rgba(20,184,166,.12)",
+
+},
+},
+}}
+></TextField>
 
 <TextField
 fullWidth
 margin="normal"
-label="Password"
+label="Enter Password"
 type={showPassword?"text":"password"}
+autoComplete="current-password"
 value={password}
 onChange={(e)=>setPassword(e.target.value)}
+onKeyDown={handleKeyPress}
 InputProps={{
 startAdornment:(
 <InputAdornment position="start">
@@ -319,6 +565,34 @@ showPassword
 </InputAdornment>
 ),
 }}
+sx={{
+mt:2,
+
+"& .MuiOutlinedInput-root":{
+
+height:56,
+
+borderRadius:3,
+
+background:"#F8FAFC",
+
+transition:"0.3s",
+
+"&:hover":{
+
+background:"#fff",
+
+},
+
+"&.Mui-focused":{
+
+background:"#fff",
+
+boxShadow:"0 0 0 4px rgba(20,184,166,.12)",
+
+},
+},
+}}
 />
 
 <Box
@@ -326,7 +600,11 @@ showPassword
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    mt: 1,
+    mt:2,
+
+flexWrap:"wrap",
+
+rowGap:1,
   }}
 >
 
@@ -352,33 +630,53 @@ showPassword
 </Box>
 
 <Button
+disabled={loading || !email || !password}
 fullWidth
 variant="contained"
 endIcon={<ArrowForwardRounded/>}
 onClick={handleLogin}
 sx={{
-mt:2,
-height:54,
+mt:3,
+
+height:56,
+
 borderRadius:3,
+
+fontSize:17,
+
 fontWeight:700,
-fontSize:16,
+
 textTransform:"none",
+
+transition:"all .3s ease",
+
 background:"linear-gradient(135deg,#14B8A6,#0F766E)",
-boxShadow:"0 10px 25px rgba(20,184,166,.35)",
+
+transition:"0.3s",
+
+boxShadow:"0 12px 30px rgba(20,184,166,.35)",
 
 "&:hover":{
-background:"linear-gradient(135deg,#0F766E,#115E59)",
+
+transform:"translateY(-3px)",
+
+boxShadow:"0 18px 45px rgba(20,184,166,.45)",
+
+background:
+"linear-gradient(135deg,#0F766E,#115E59)",
+
 },
 }}
 >
-
-Login
+{loading ? "Signing In..." : "Login"}
 
 </Button>
 
 <Divider
 sx={{
-my:3,
+my:4,
+color:"#94A3B8",
+fontWeight:600,
 }}
 >
 OR
@@ -418,42 +716,42 @@ OR
 </Box>
 
 <Box
-  sx={{
-    mt: 4,
-    pt: 3,
-    borderTop: "1px solid #E5E7EB",
-    textAlign: "center",
-  }}
+sx={{
+mt:4,
+pt:3,
+borderTop:"1px solid #E2E8F0",
+textAlign:"center",
+}}
 >
 
 <Typography
-  sx={{
-    fontWeight: 600,
-    color: "#475569",
-    fontSize: 14,
-  }}
+sx={{
+fontWeight:700,
+fontSize:15,
+color:"#334155",
+}}
 >
 © 2026 HMS ERP
 </Typography>
 
 <Typography
-  sx={{
-    color: "#94A3B8",
-    fontSize: 13,
-    mt: .5,
-  }}
+sx={{
+mt:0.5,
+fontSize:13,
+color:"#64748B",
+}}
 >
 Hospital Management System
 </Typography>
 
 <Typography
-  sx={{
-    color: "#94A3B8",
-    fontSize: 12,
-    mt: .5,
-  }}
+sx={{
+mt:0.5,
+fontSize:12,
+color:"#94A3B8",
+}}
 >
-Version 1.0.0
+Trusted • Secure • Reliable
 </Typography>
 
 </Box>

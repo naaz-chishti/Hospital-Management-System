@@ -10,89 +10,74 @@ import {
   TableRow,
   TableCell,
   Avatar,
-  InputAdornment,
-} from "@mui/material";
-
-import {
+  MenuItem,
+  Button,
   Paper,
   Table,
   TableHead,
   TableBody,
   TableContainer,
+  InputAdornment,
 } from "@mui/material";
 
-import PersonIcon from "@mui/icons-material/Person";
-import EmailIcon from "@mui/icons-material/Email";
-import LockIcon from "@mui/icons-material/Lock";
-import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
-import PhoneIcon from "@mui/icons-material/Phone";
-import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import FilterListRoundedIcon from "@mui/icons-material/FilterListRounded";
 import MedicalServicesRoundedIcon from "@mui/icons-material/MedicalServicesRounded";
+import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
+import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
+import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 
-import SearchBar from "../components/SearchBar";
 import PageHeader from "../components/PageHeader";
 import StatusChip from "../components/StatusChip";
 import RoleChip from "../components/RoleChip";
 import ActionButtons from "../components/ActionButtons";
 import FormDialog from "../components/FormDialog";
-
 import ModuleStats from "../components/ModuleStats";
-import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
-import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
-import TableFilters from "../components/TableFilters";
-import TablePagination from "@mui/material/TablePagination";
 
-import ArrowUpwardRoundedIcon from "@mui/icons-material/ArrowUpwardRounded";
-import ArrowDownwardRoundedIcon from "@mui/icons-material/ArrowDownwardRounded";
+import TablePagination from "@mui/material/TablePagination";
 
 import { toast } from "react-toastify";
 
-import {
-  Stack,
-} from "@mui/material";
+
+/* =========================
+   TEXT FIELD STYLE
+========================= */
 
 const textFieldStyle = {
   "& .MuiOutlinedInput-root": {
-    height: 58,
-    borderRadius: "14px",
-    bgcolor: "#FFFFFF",
-    transition: "all .25s ease",
+    minHeight: 52,
+    borderRadius: 3,
+    bgcolor: "#fff",
 
     "& fieldset": {
       borderColor: "#E2E8F0",
-    },
-
-    "&:hover": {
-      bgcolor: "#FCFDFE",
     },
 
     "&:hover fieldset": {
       borderColor: "#14B8A6",
     },
 
-    "&.Mui-focused": {
-      bgcolor: "#FFFFFF",
-    },
-
     "&.Mui-focused fieldset": {
       borderColor: "#14B8A6",
       borderWidth: 2,
-      boxShadow: "0 0 0 4px rgba(20,184,166,.08)",
     },
   },
 
   "& .MuiInputLabel-root": {
     color: "#64748B",
     fontWeight: 600,
-    fontSize: 14,
   },
 
   "& .MuiInputBase-input": {
     fontSize: 14,
-    fontWeight: 500,
   },
 };
 
+
+/* =========================
+   DOCTORS
+========================= */
 
 function Doctors() {
 
@@ -100,923 +85,2008 @@ function Doctors() {
 
   const [open, setOpen] = useState(false);
 
+  const [viewOpen, setViewOpen] = useState(false);
+
   const [editingId, setEditingId] = useState(null);
+
+  const [selectedDoctor, setSelectedDoctor] =
+    useState(null);
 
   const [search, setSearch] = useState("");
 
-  const [page, setPage] = useState(0);
-
-const [rowsPerPage, setRowsPerPage] = useState(10);
-
-const handleView = (doctor) => {
-  setSelectedDoctor(doctor);
-  setViewOpen(true);
-};
-
   const [statusFilter, setStatusFilter] =
-  useState("all");
+    useState("all");
 
-  const [sortField, setSortField] = useState("name");
-const [sortDirection, setSortDirection] = useState("asc");
+  const [sortField, setSortField] =
+    useState("name");
 
-const [viewOpen, setViewOpen] = useState(false);
-const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [sortDirection, setSortDirection] =
+    useState("asc");
 
-  const filterOptions = [
-  {
-    value: "all",
-    label: "All Doctors",
-  },
-  {
-    value: "active",
-    label: "Active",
-  },
-  {
-    value: "inactive",
-    label: "Inactive",
-  },
-];
+  const [page, setPage] =
+    useState(0);
+
+  const [rowsPerPage, setRowsPerPage] =
+    useState(10);
+
+
+  /* =========================
+     FORM DATA
+  ========================= */
 
   const [formData, setFormData] = useState({
-  name: "",
-  email: "",
-  password: "",
-  department: "",
-  specialization: "",
-  phone: "",
-  experience: "",
-});
-
-  useEffect(() => {
-    fetchDoctors();
-  }, []);
-
- const fetchDoctors = async () => {
-
-  try {
-
-    const res = await API.get("/doctors");
-
-    setDoctors(res.data.data);
-
-  } catch (error) {
-
-    toast.error(
-      error.response?.data?.message ||
-      "Failed to fetch doctors."
-    );
-
-  }
-
-};
-
-const handleChange = (e) => {
-
-  setFormData({
-
-    ...formData,
-
-    [e.target.name]: e.target.value,
-
+    name: "",
+    email: "",
+    password: "",
+    department: "",
+    specialization: "",
+    phone: "",
+    experience: "",
   });
 
-};
 
-const handleSubmit = async () => {
+  /* =========================
+     FILTER OPTIONS
+  ========================= */
 
-  try {
+  const filterOptions = [
+    {
+      value: "all",
+      label: "All Doctors",
+    },
+    {
+      value: "active",
+      label: "Active",
+    },
+    {
+      value: "inactive",
+      label: "Inactive",
+    },
+  ];
 
-    if (editingId) {
 
-      const {
-        password,
-        ...updateData
-      } = formData;
+  /* =========================
+     FETCH DOCTORS
+  ========================= */
 
-      await API.put(
-        `/doctors/${editingId}`,
-        updateData
+  useEffect(() => {
+
+    fetchDoctors();
+
+  }, []);
+
+
+  const fetchDoctors = async () => {
+
+    try {
+
+      const res =
+        await API.get("/doctors");
+
+      setDoctors(
+        res.data.data || []
       );
 
-      toast.success(
-        "Doctor updated successfully."
-      );
+    } catch (error) {
 
-    } else {
+      console.log(error);
 
-      await API.post(
-        "/doctors",
-        formData
-      );
-
-      toast.success(
-        "Doctor added successfully."
+      toast.error(
+        error.response?.data?.message ||
+        "Failed to fetch doctors."
       );
 
     }
 
-    await fetchDoctors();
+  };
 
-    setOpen(false);
+
+  /* =========================
+     FORM CHANGE
+  ========================= */
+
+  const handleChange = (e) => {
+
+    setFormData({
+
+      ...formData,
+
+      [e.target.name]:
+        e.target.value,
+
+    });
+
+  };
+
+
+  /* =========================
+     RESET FORM
+  ========================= */
+
+  const resetForm = () => {
+
+    setFormData({
+
+      name: "",
+      email: "",
+      password: "",
+      department: "",
+      specialization: "",
+      phone: "",
+      experience: "",
+
+    });
+
+  };
+
+
+  /* =========================
+     ADD DOCTOR
+  ========================= */
+
+  const handleAddDoctor = () => {
 
     setEditingId(null);
 
-  setFormData({
-  name: "",
-  email: "",
-  password: "",
-  department: "",
-  specialization: "",
-  phone: "",
-  experience: "",
-});
+    resetForm();
 
-  } catch (error) {
+    setOpen(true);
 
-    toast.error(
-      error.response?.data?.message ||
-      "Something went wrong."
-    );
+  };
 
-    console.log(error);
 
-  }
+  /* =========================
+     SUBMIT
+  ========================= */
 
-};
+  const handleSubmit = async () => {
 
-const handleDelete = async (id) => {
+    try {
 
-  if (!window.confirm("Delete Doctor?")) return;
+      if (editingId) {
 
-  try {
+        const {
+          password,
+          ...updateData
+        } = formData;
 
-    await API.delete(
-      `/doctors/${id}`
-    );
+        await API.put(
+          `/doctors/${editingId}`,
+          updateData
+        );
 
-    toast.success(
-      "Doctor deleted successfully."
-    );
+        toast.success(
+          "Doctor updated successfully."
+        );
 
-    fetchDoctors();
+      } else {
 
-  } catch (error) {
+        await API.post(
+          "/doctors",
+          formData
+        );
 
-    toast.error(
-      error.response?.data?.message ||
-      "Failed to delete doctor."
-    );
+        toast.success(
+          "Doctor added successfully."
+        );
 
-  }
+      }
 
-};
 
-const handleEdit = (doctor) => {
+      await fetchDoctors();
 
-  setEditingId(doctor._id);
+      setOpen(false);
 
-  setFormData({
-  name: doctor.name,
-  email: doctor.email,
-  password: "",
-  department: doctor.department || "",
-  specialization: doctor.specialization || "",
-  phone: doctor.phone || "",
-  experience: doctor.experience || "",
-});
+      setEditingId(null);
 
-  setOpen(true);
+      resetForm();
 
-};
+    } catch (error) {
 
-const handleSort = (field) => {
+      console.log(error);
 
-  const isAsc =
-    sortField === field &&
-    sortDirection === "asc";
+      toast.error(
+        error.response?.data?.message ||
+        "Something went wrong."
+      );
 
-  setSortDirection(
-    isAsc ? "desc" : "asc"
-  );
-
-  setSortField(field);
-
-};
-
-  const stats = [
-  {
-    label: "Total Doctors",
-    value: doctors.length,
-    icon: <GroupsRoundedIcon />,
-  },
-  {
-    label: "Active",
-    value: doctors.length,
-    icon: <CheckCircleRoundedIcon />,
-  },
-  {
-    label: "Departments",
-    value: 8,
-    icon: <LocalHospitalIcon />,
-  },
-  {
-    label: "Avg Experience",
-    value: "10+",
-    icon: <WorkspacePremiumIcon />
-  },
-];
-
-const filteredDoctors = doctors
-  .filter((doctor) => {
-    const matchesSearch =
-      doctor.name
-        .toLowerCase()
-        .includes(search.toLowerCase()) ||
-      doctor.email
-        .toLowerCase()
-        .includes(search.toLowerCase());
-
-    const matchesStatus =
-      statusFilter === "all" ||
-      doctor.status?.toLowerCase() === statusFilter;
-
-    return matchesSearch && matchesStatus;
-  })
-  .sort((a, b) => {
-    const valueA = a[sortField] || "";
-    const valueB = b[sortField] || "";
-
-    if (sortDirection === "asc") {
-      return valueA.toString().localeCompare(valueB.toString());
     }
 
-    return valueB.toString().localeCompare(valueA.toString());
-  });
+  };
 
-const paginatedDoctors = filteredDoctors.slice(
-  page * rowsPerPage,
-  page * rowsPerPage + rowsPerPage
-);
 
-console.log(doctors);
+  /* =========================
+     VIEW DOCTOR
+  ========================= */
+
+  const handleView = (doctor) => {
+
+    setSelectedDoctor(
+      doctor
+    );
+
+    setViewOpen(true);
+
+  };
+
+
+  /* =========================
+     EDIT DOCTOR
+  ========================= */
+
+  const handleEdit = (doctor) => {
+
+    setEditingId(
+      doctor._id
+    );
+
+    setFormData({
+
+      name:
+        doctor.name || "",
+
+      email:
+        doctor.email || "",
+
+      password: "",
+
+      department:
+        doctor.department || "",
+
+      specialization:
+        doctor.specialization || "",
+
+      phone:
+        doctor.phone || "",
+
+      experience:
+        doctor.experience || "",
+
+    });
+
+    setOpen(true);
+
+  };
+
+
+  /* =========================
+     DELETE DOCTOR
+  ========================= */
+
+  const handleDelete = async (id) => {
+
+    if (
+      !window.confirm(
+        "Delete Doctor?"
+      )
+    ) {
+
+      return;
+
+    }
+
+
+    try {
+
+      await API.delete(
+        `/doctors/${id}`
+      );
+
+      toast.success(
+        "Doctor deleted successfully."
+      );
+
+      fetchDoctors();
+
+    } catch (error) {
+
+      toast.error(
+        error.response?.data?.message ||
+        "Failed to delete doctor."
+      );
+
+    }
+
+  };
+
+
+  /* =========================
+     SORT
+  ========================= */
+
+  const handleSort = (field) => {
+
+    const isAsc =
+      sortField === field &&
+      sortDirection === "asc";
+
+    setSortField(field);
+
+    setSortDirection(
+      isAsc
+        ? "desc"
+        : "asc"
+    );
+
+  };
+
+
+  /* =========================
+     FILTER + SEARCH + SORT
+  ========================= */
+
+  const filteredDoctors =
+    [...doctors]
+
+      .filter((doctor) => {
+
+        const text =
+          search
+            .toLowerCase()
+            .trim();
+
+
+        const searchableText = `
+
+          ${doctor.name || ""}
+
+          ${doctor.email || ""}
+
+          ${doctor.department || ""}
+
+          ${doctor.specialization || ""}
+
+          ${doctor.phone || ""}
+
+          ${doctor.experience || ""}
+
+        `.toLowerCase();
+
+
+        const matchesSearch =
+          !text ||
+          searchableText.includes(
+            text
+          );
+
+
+        const matchesStatus =
+          statusFilter === "all" ||
+          (
+            doctor.status ||
+            "Active"
+          )
+            .toLowerCase() ===
+            statusFilter;
+
+
+        return (
+          matchesSearch &&
+          matchesStatus
+        );
+
+      })
+
+      .sort((a, b) => {
+
+        const valueA =
+          a[sortField] || "";
+
+        const valueB =
+          b[sortField] || "";
+
+
+        const result =
+          valueA
+            .toString()
+            .localeCompare(
+              valueB
+                .toString()
+            );
+
+
+        return sortDirection ===
+          "asc"
+          ? result
+          : -result;
+
+      });
+
+
+  /* =========================
+     PAGINATION
+  ========================= */
+
+  const paginatedDoctors =
+    filteredDoctors.slice(
+
+      page * rowsPerPage,
+
+      page * rowsPerPage +
+        rowsPerPage
+
+    );
+
+
+  /* =========================
+     RESET PAGE WHEN SEARCH
+  ========================= */
+
+  useEffect(() => {
+
+    setPage(0);
+
+  }, [
+    search,
+    statusFilter,
+  ]);
+
+
+  /* =========================
+     STATS
+  ========================= */
+
+  const activeDoctors =
+    doctors.filter(
+      (doctor) =>
+        (
+          doctor.status ||
+          "Active"
+        ).toLowerCase() ===
+        "active"
+    ).length;
+
+
+  const departments =
+    new Set(
+      doctors
+        .map(
+          (doctor) =>
+            doctor.department
+        )
+        .filter(Boolean)
+    ).size;
+
+
+  const experienceValues =
+    doctors
+      .map(
+        (doctor) =>
+          Number(
+            doctor.experience
+          )
+      )
+      .filter(
+        (value) =>
+          !Number.isNaN(value)
+      );
+
+
+  const averageExperience =
+    experienceValues.length
+      ? Math.round(
+          experienceValues.reduce(
+            (a, b) =>
+              a + b,
+            0
+          ) /
+            experienceValues.length
+        )
+      : 0;
+
+
+  const stats = [
+
+    {
+      label: "Total Doctors",
+      value: doctors.length,
+      icon:
+        <GroupsRoundedIcon />,
+    },
+
+    {
+      label: "Active",
+      value: activeDoctors,
+      icon:
+        <CheckCircleRoundedIcon />,
+    },
+
+    {
+      label: "Departments",
+      value: departments,
+      icon:
+        <LocalHospitalIcon />,
+    },
+
+    {
+      label: "Avg Experience",
+      value:
+        `${averageExperience}+`,
+      icon:
+        <WorkspacePremiumIcon />,
+    },
+
+  ];
+
+
+  /* =========================
+     RETURN
+  ========================= */
 
   return (
 
     <DashboardLayout>
 
-<PageHeader
-  title="Doctors"
-  subtitle="Manage hospital doctors, specialists and consultants"
-  icon={<MedicalServicesRoundedIcon />}
-  buttonText="Add Doctor"
-  onButtonClick={() => {
-    setEditingId(null);
-
-    setFormData({
-      name: "",
-      email: "",
-      password: "",
-    });
-
-    setOpen(true);
-  }}
-/>
-
-<ModuleStats stats={stats} />
-
-<TableFilters
-  search={search}
-  onSearchChange={(e) =>
-    setSearch(e.target.value)
-  }
-  filter={statusFilter}
-  onFilterChange={(e) =>
-    setStatusFilter(e.target.value)
-  }
-  filterOptions={filterOptions}
-  placeholder="Search doctors..."
-  onReset={() => {
-    setSearch("");
-    setStatusFilter("all");
-  }}
-/>
-
-<Paper
-  elevation={0}
-  sx={{
-  mt: 3,
-  borderRadius: 4,
-  overflow: "hidden",
-  border: "1px solid #E2E8F0",
-  boxShadow: "0 12px 30px rgba(15,23,42,.05)",
-}}
->
-  <TableContainer>
-
- <Table
-sx={{
-width:"100%",
-tableLayout:"fixed",
-}}
->
-
-     <TableHead>
-
-<TableRow
-sx={{
-background:"#F8FAFC",
-
-"& .MuiTableCell-root":{
-fontWeight:"700 !important",
-fontSize:"13px",
-color:"#1E293B",
-textTransform:"uppercase",
-letterSpacing:".6px",
-borderBottom:"1px solid #E2E8F0",
-},
-}}
->
-
-<TableCell align="center" sx={{ pl: 4 }}>
-  DOCTOR
-</TableCell>
-
-<TableCell align="center">EMAIL</TableCell>
-
-<TableCell align="center">ROLE</TableCell>
-
-<TableCell align="center">STATUS</TableCell>
-
-<TableCell align="center">ACTIONS</TableCell>
-
-</TableRow>
-
-</TableHead>
-
-     <TableBody>
-
-{paginatedDoctors.length === 0 ? (
-
-<TableRow>
-
-<TableCell
-colSpan={5}
-align="center"
-sx={{ py: 8 }}
->
-
-<MedicalServicesRoundedIcon
-sx={{
-fontSize:60,
-color:"#CBD5E1",
-}}
-/>
-
-<Typography
-mt={2}
-fontWeight={700}
->
-No Doctors Found
-</Typography>
-
-<Typography
-color="text.secondary"
->
-Try another search.
-</Typography>
-
-</TableCell>
-
-</TableRow>
-
-) : (
-
-paginatedDoctors.map((doctor)=>(
-
-<TableRow
-key={doctor._id}
-hover
-sx={{
-height:74,
-
-"& td":{
-py:2,
-px:3,
-borderBottom:"1px solid #EEF2F7",
-verticalAlign:"middle",
-},
-
-"&:hover":{
-background:"#F8FAFC",
-},
-}}
->
-
-{/* Doctor */}
-
-<TableCell width="40%">
-
-<Box
-sx={{
-display: "flex",
-alignItems: "center",
-gap: 2,
-}}
->
-
-<Avatar
-sx={{
-width: 44,
-height: 44,
-background: "linear-gradient(135deg,#14B8A6,#0F766E)",
-fontWeight: 700,
-flexShrink: 0,
-}}
->
-{doctor.name
-?.split(" ")
-.map((n) => n[0])
-.join("")
-.substring(0, 2)}
-</Avatar>
-
-<Box
-sx={{
-display: "flex",
-flexDirection: "column",
-justifyContent: "center",
-}}
->
-
-<Typography
-sx={{
-fontWeight: 700,
-fontSize: 14,
-lineHeight: 1.3,
-whiteSpace: "nowrap",
-}}
->
-{doctor.name}
-</Typography>
-
-<Typography
-  sx={{
-    fontSize: 12,
-    color: "#94A3B8",
-    mt: 0.3,
-  }}
->
-  {doctor.specialization ||
-   doctor.department ||
-   "General Physician"}
-</Typography>
-
-</Box>
-
-</Box>
-
-</TableCell>
-
-{/* Email */}
-
-<TableCell width="10%" align="center">
-
-<Typography
-fontWeight={400}
-fontSize={14}
->
-{doctor.email}
-</Typography>
-
-<Typography
-sx={{
-fontSize: 12,
-color: "#64748B",
-lineHeight: 1.3,
-fontWeight:500,
-letterSpacing:"0.4px",
-mt:0.3,
-}}
->
-Official Email
-</Typography>
-
-</TableCell>
-
-{/* Role */}
-
-<TableCell align="center">
-
-<RoleChip
-role={doctor.role || "Doctor"}
-/>
-
-</TableCell>
-
-{/* Status */}
-
-<TableCell align="center">
-
-<StatusChip
-status={doctor.status || "Active"}
-/>
-
-</TableCell>
-
-{/* Actions */}
-
-<TableCell align="center">
-
-<ActionButtons
-onView={()=>handleView(doctor)}
-onEdit={()=>handleEdit(doctor)}
-onDelete={()=>handleDelete(doctor._id)}
-/>
-
-</TableCell>
-
-</TableRow>
-
-))
-
-)}
-
-</TableBody>
-
-    </Table>
-
-  </TableContainer>
-
-  <TablePagination
-component="div"
-count={filteredDoctors.length}
-page={page}
-rowsPerPage={rowsPerPage}
-rowsPerPageOptions={[5,10,25,50]}
-onPageChange={(event,newPage)=>setPage(newPage)}
-onRowsPerPageChange={(event)=>{
-setRowsPerPage(parseInt(event.target.value,10));
-setPage(0);
-}}
-sx={{
-borderTop:"1px solid #E2E8F0",
-background:"#fff",
-
-"& .MuiTablePagination-toolbar":{
-minHeight:64,
-px:3,
-},
-
-"& .MuiTablePagination-selectLabel":{
-fontWeight:600,
-color:"#475569",
-},
-
-"& .MuiTablePagination-displayedRows":{
-fontWeight:600,
-color:"#475569",
-},
-
-"& .MuiTablePagination-actions button":{
-borderRadius:2,
-},
-}}
-/>
-
-</Paper>
+
+      {/* HEADER */}
+
+      <PageHeader
+
+        title="Doctors"
+
+        subtitle=
+          "Manage hospital doctors, specialists and consultants"
+
+        icon={
+          <MedicalServicesRoundedIcon />
+        }
+
+        buttonText="Add Doctor"
+
+        onButtonClick={
+          handleAddDoctor
+        }
+
+      />
+
+
+      {/* STATS */}
+
+      <ModuleStats
+        stats={stats}
+      />
+
+
+      {/* SEARCH / FILTER */}
+
+      <Paper
+
+        elevation={0}
+
+        sx={{
+
+          mt: 3,
+
+          mb: 3,
+
+          p: 2,
+
+          borderRadius: 4,
+
+          border:
+            "1px solid #E2E8F0",
+
+          boxShadow:
+            "0 8px 24px rgba(15,23,42,.05)",
+
+        }}
+
+      >
+
+        <Box
+
+          sx={{
+
+            display: "flex",
+
+            gap: 1.5,
+
+            alignItems:
+              "center",
+
+            flexWrap: {
+
+              xs: "wrap",
+
+              md: "nowrap",
+
+            },
+
+          }}
+
+        >
+
+          {/* SEARCH */}
+
+          <TextField
+
+            fullWidth
+
+            size="small"
+
+            placeholder=
+              "Search doctors, department, specialization..."
+
+            value={search}
+
+            onChange={(e) =>
+              setSearch(
+                e.target.value
+              )
+            }
+
+            InputProps={{
+
+              startAdornment: (
+
+                <InputAdornment
+                  position="start"
+                >
+
+                  <SearchRoundedIcon
+                    sx={{
+                      color:
+                        "#94A3B8",
+                    }}
+                  />
+
+                </InputAdornment>
+
+              ),
+
+            }}
+
+            sx={{
+
+              flex: 1,
+
+              minWidth: {
+
+                xs: "100%",
+
+                md: 320,
+
+              },
+
+              "& .MuiOutlinedInput-root": {
+
+                height: 42,
+
+                borderRadius: 3,
+
+                bgcolor:
+                  "#F8FAFC",
+
+                "&:hover fieldset": {
+
+                  borderColor:
+                    "#14B8A6",
+
+                },
+
+                "&.Mui-focused fieldset": {
+
+                  borderColor:
+                    "#14B8A6",
+
+                },
+
+              },
+
+            }}
+
+          />
+
+
+          {/* FILTER */}
+
+          <TextField
+
+            select
+
+            size="small"
+
+            value={
+              statusFilter
+            }
+
+            onChange={(e) =>
+              setStatusFilter(
+                e.target.value
+              )
+            }
+
+            sx={{
+
+              width: {
+
+                xs: "100%",
+
+                sm: 180,
+
+                md: 180,
+
+              },
+
+              "& .MuiOutlinedInput-root": {
+
+                height: 42,
+
+                borderRadius: 3,
+
+              },
+
+            }}
+
+            InputProps={{
+
+              startAdornment: (
+
+                <InputAdornment
+                  position="start"
+                >
+
+                  <FilterListRoundedIcon
+                    sx={{
+                      color:
+                        "#64748B",
+                    }}
+                  />
+
+                </InputAdornment>
+
+              ),
+
+            }}
+
+          >
+
+            {filterOptions.map(
+              (option) => (
+
+                <MenuItem
+                  key={
+                    option.value
+                  }
+                  value={
+                    option.value
+                  }
+                >
+
+                  {
+                    option.label
+                  }
+
+                </MenuItem>
+
+              )
+            )}
+
+          </TextField>
+
+
+          {/* SORT */}
+
+          <TextField
+
+            select
+
+            size="small"
+
+            value={
+              `${sortField}-${sortDirection}`
+            }
+
+            onChange={(e) => {
+
+              const [
+                field,
+                direction,
+              ] =
+                e.target.value
+                  .split("-");
+
+              setSortField(field);
+
+              setSortDirection(
+                direction
+              );
+
+            }}
+
+            sx={{
+
+              width: {
+
+                xs: "100%",
+
+                sm: 180,
+
+                md: 180,
+
+              },
+
+              "& .MuiOutlinedInput-root": {
+
+                height: 42,
+
+                borderRadius: 3,
+
+              },
+
+            }}
+
+          >
+
+            <MenuItem value="name-asc">
+              Name A-Z
+            </MenuItem>
+
+            <MenuItem value="name-desc">
+              Name Z-A
+            </MenuItem>
+
+            <MenuItem value="department-asc">
+              Department A-Z
+            </MenuItem>
+
+            <MenuItem value="specialization-asc">
+              Specialization A-Z
+            </MenuItem>
+
+            <MenuItem value="experience-desc">
+              Experience High-Low
+            </MenuItem>
+
+            <MenuItem value="experience-asc">
+              Experience Low-High
+            </MenuItem>
+
+          </TextField>
+
+
+          {/* CLEAR */}
+
+          {(search ||
+            statusFilter !==
+              "all") && (
+
+            <Button
+
+              onClick={() => {
+
+                setSearch("");
+
+                setStatusFilter(
+                  "all"
+                );
+
+                setSortField(
+                  "name"
+                );
+
+                setSortDirection(
+                  "asc"
+                );
+
+              }}
+
+              sx={{
+
+                height: 42,
+
+                textTransform:
+                  "none",
+
+                fontWeight: 700,
+
+                color:
+                  "#0F766E",
+
+              }}
+
+            >
+
+              Clear
+
+            </Button>
+
+          )}
+
+        </Box>
+
+      </Paper>
+
+
+      {/* TABLE */}
+
+      <Paper
+
+        elevation={0}
+
+        sx={{
+
+          borderRadius: 4,
+
+          overflow: "hidden",
+
+          border:
+            "1px solid #E2E8F0",
+
+          boxShadow:
+            "0 12px 30px rgba(15,23,42,.05)",
+
+        }}
+
+      >
+
+        <TableContainer
+          sx={{
+            overflowX:
+              "auto",
+          }}
+        >
+
+          <Table
+
+            sx={{
+
+              width: "100%",
+
+              minWidth: 1000,
+
+              tableLayout:
+                "fixed",
+
+            }}
+
+          >
+
+            <TableHead>
+
+              <TableRow
+
+                sx={{
+
+                  bgcolor:
+                    "#F8FAFC",
+
+                  "& .MuiTableCell-root": {
+
+                    fontWeight:
+                      "700 !important",
+
+                    fontSize: 12,
+
+                    color:
+                      "#1E293B",
+
+                    textTransform:
+                      "uppercase",
+
+                    letterSpacing:
+                      ".6px",
+
+                    borderBottom:
+                      "1px solid #E2E8F0",
+
+                  },
+
+                }}
+
+              >
+
+                <TableCell
+                  align="center"
+                  sx={{
+                    width: "30%",
+                  }}
+                >
+
+                  DOCTOR
+
+                </TableCell>
+
+
+                <TableCell
+                  align="center"
+                  sx={{
+                    width: "25%",
+                  }}
+                >
+
+                  EMAIL
+
+                </TableCell>
+
+
+                <TableCell
+                  align="center"
+                  sx={{
+                    width: "15%",
+                  }}
+                >
+
+                  ROLE
+
+                </TableCell>
+
+
+                <TableCell
+                  align="center"
+                  sx={{
+                    width: "15%",
+                  }}
+                >
+
+                  STATUS
+
+                </TableCell>
+
+
+                <TableCell
+                  align="center"
+                  sx={{
+                    width: "15%",
+                  }}
+                >
+
+                  ACTIONS
+
+                </TableCell>
+
+              </TableRow>
+
+            </TableHead>
+
+
+            <TableBody>
+
+              {paginatedDoctors.length ===
+              0 ? (
+
+                <TableRow>
+
+                  <TableCell
+                    colSpan={5}
+                    align="center"
+                    sx={{
+                      py: 8,
+                    }}
+                  >
+
+                    <MedicalServicesRoundedIcon
+
+                      sx={{
+
+                        fontSize: 60,
+
+                        color:
+                          "#CBD5E1",
+
+                      }}
+
+                    />
+
+                    <Typography
+                      mt={2}
+                      fontWeight={700}
+                    >
+
+                      No Doctors Found
+
+                    </Typography>
+
+                    <Typography
+                      color="text.secondary"
+                    >
+
+                      Try another search
+                      or filter.
+
+                    </Typography>
+
+                  </TableCell>
+
+                </TableRow>
+
+              ) : (
+
+                paginatedDoctors.map(
+                  (doctor) => (
+
+                    <TableRow
+
+                      key={
+                        doctor._id
+                      }
+
+                      hover
+
+                      sx={{
+
+                        minHeight: 76,
+
+                        "& td": {
+
+                          py: 2,
+
+                          px: 2,
+
+                          verticalAlign:
+                            "middle",
+
+                          borderBottom:
+                            "1px solid #EEF2F7",
+
+                        },
+
+                        "&:hover": {
+
+                          bgcolor:
+                            "#F8FAFC",
+
+                        },
+
+                      }}
+
+                    >
+
+                      {/* DOCTOR */}
+
+                      <TableCell>
+
+                        <Box
+
+                          sx={{
+
+                            display:
+                              "flex",
+
+                            alignItems:
+                              "center",
+
+                            gap: 1.5,
+
+                          }}
+
+                        >
+
+                          <Avatar
+
+                            sx={{
+
+                              width: 44,
+
+                              height: 44,
+
+                              flexShrink: 0,
+
+                              background:
+                                "linear-gradient(135deg,#14B8A6,#0F766E)",
+
+                              fontWeight: 700,
+
+                            }}
+
+                          >
+
+                            {
+                              doctor.name
+                                ?.split(
+                                  " "
+                                )
+                                .map(
+                                  (n) =>
+                                    n[0]
+                                )
+                                .join("")
+                                .substring(
+                                  0,
+                                  2
+                                )
+                            }
+
+                          </Avatar>
+
+
+                          <Box
+                            sx={{
+                              minWidth: 0,
+                            }}
+                          >
+
+                            <Typography
+
+                              sx={{
+
+                                fontWeight: 700,
+
+                                fontSize: 14,
+
+                                whiteSpace:
+                                  "nowrap",
+
+                                overflow:
+                                  "hidden",
+
+                                textOverflow:
+                                  "ellipsis",
+
+                              }}
+
+                            >
+
+                              {
+                                doctor.name
+                              }
+
+                            </Typography>
+
+
+                            <Typography
+
+                              sx={{
+
+                                fontSize: 12,
+
+                                color:
+                                  "#94A3B8",
+
+                                mt: .3,
+
+                                whiteSpace:
+                                  "nowrap",
+
+                                overflow:
+                                  "hidden",
+
+                                textOverflow:
+                                  "ellipsis",
+
+                              }}
+
+                            >
+
+                              {
+                                doctor.specialization ||
+                                doctor.department ||
+                                "General Physician"
+                              }
+
+                            </Typography>
+
+                          </Box>
+
+                        </Box>
+
+                      </TableCell>
+
+
+                      {/* EMAIL */}
+
+                      <TableCell
+                        align="center"
+                      >
+
+                        <Typography
+
+                          sx={{
+
+                            fontSize: 13,
+
+                            fontWeight: 500,
+
+                            overflow:
+                              "hidden",
+
+                            textOverflow:
+                              "ellipsis",
+
+                            whiteSpace:
+                              "nowrap",
+
+                          }}
+
+                        >
+
+                          {
+                            doctor.email
+                          }
+
+                        </Typography>
+
+                      </TableCell>
+
+
+                      {/* ROLE */}
+
+                      <TableCell
+                        align="center"
+                      >
+
+                        <RoleChip
+                          role={
+                            doctor.role ||
+                            "Doctor"
+                          }
+                        />
+
+                      </TableCell>
+
+
+                      {/* STATUS */}
+
+                      <TableCell
+                        align="center"
+                      >
+
+                        <StatusChip
+                          status={
+                            doctor.status ||
+                            "Active"
+                          }
+                        />
+
+                      </TableCell>
+
+
+                      {/* ACTIONS */}
+
+                      <TableCell
+                        align="center"
+                      >
+
+                        <ActionButtons
+
+                          onView={() =>
+                            handleView(
+                              doctor
+                            )
+                          }
+
+                          onEdit={() =>
+                            handleEdit(
+                              doctor
+                            )
+                          }
+
+                          onDelete={() =>
+                            handleDelete(
+                              doctor._id
+                            )
+                          }
+
+                        />
+
+                      </TableCell>
+
+                    </TableRow>
+
+                  )
+                )
+
+              )}
+
+            </TableBody>
+
+          </Table>
+
+        </TableContainer>
+
+
+        {/* PAGINATION */}
+
+        <TablePagination
+
+          component="div"
+
+          count={
+            filteredDoctors.length
+          }
+
+          page={page}
+
+          rowsPerPage={
+            rowsPerPage
+          }
+
+          rowsPerPageOptions={[
+            5,
+            10,
+            25,
+            50,
+          ]}
+
+          onPageChange={(
+            event,
+            newPage
+          ) => {
+
+            setPage(
+              newPage
+            );
+
+          }}
+
+          onRowsPerPageChange={(
+            event
+          ) => {
+
+            setRowsPerPage(
+              parseInt(
+                event.target.value,
+                10
+              )
+            );
+
+            setPage(0);
+
+          }}
+
+          sx={{
+
+            borderTop:
+              "1px solid #E2E8F0",
+
+            "& .MuiTablePagination-toolbar": {
+
+              minHeight: 64,
+
+              px: 2,
+
+            },
+
+          }}
+
+        />
+
+      </Paper>
+
+
+      {/* =========================
+          ADD / EDIT DOCTOR
+      ========================= */}
 
       <FormDialog
-open={open}
-onClose={()=>setOpen(false)}
-title={
-editingId
-? "Edit Doctor"
-: "Add Doctor"
-}
-submitText={
-editingId
-? "Update"
-: "Save"
-}
-onSubmit={handleSubmit}
->
 
-<Box
-  sx={{
-    mt: 3,
-    px: 3,
-    pb: 2,
-    display: "grid",
-    gridTemplateColumns: {
-      xs: "1fr",
-      md: "1fr 1fr",
-    },
-    columnGap: 2.5,
-    rowGap: 2.5,
-    alignItems: "start",
-  }}
->
+        open={open}
 
-  {/* Doctor Name */}
+        onClose={() =>
+          setOpen(false)
+        }
 
-  <Box>
-    <Typography sx={{ mb: 1, fontSize: 13, fontWeight: 600, color: "#64748B" }}>
-      Doctor Name
-    </Typography>
+        title={
+          editingId
+            ? "Edit Doctor"
+            : "Add Doctor"
+        }
 
-    <TextField
-      fullWidth
-      name="name"
-      value={formData.name}
-      onChange={handleChange}
-      placeholder="Enter Doctor Name"
-      sx={textFieldStyle}
-    />
-  </Box>
+        subtitle=
+          "Enter doctor professional and contact details"
 
-  {/* Email */}
+        submitText={
+          editingId
+            ? "Update Doctor"
+            : "Save Doctor"
+        }
 
-  <Box>
-    <Typography sx={{ mb: 1, fontSize: 13, fontWeight: 600, color: "#64748B" }}>
-      Email Address
-    </Typography>
+        onSubmit={
+          handleSubmit
+        }
 
-    <TextField
-      fullWidth
-      name="email"
-      value={formData.email}
-      onChange={handleChange}
-      placeholder="Enter Email Address"
-      sx={textFieldStyle}
-    />
-  </Box>
+      >
 
-  {/* Password */}
+        <Box
 
-  {!editingId && (
+          sx={{
 
-    <Box>
-      <Typography sx={{ mb: 1, fontSize: 13, fontWeight: 600, color: "#64748B" }}>
-        Password
-      </Typography>
+            mt: 2,
 
-      <TextField
-        fullWidth
-        type="password"
-        name="password"
-        value={formData.password}
-        onChange={handleChange}
-        placeholder="Enter Password"
-        sx={textFieldStyle}
-      />
-    </Box>
+            display: "grid",
 
-  )}
+            gridTemplateColumns: {
 
-  {/* Department */}
+              xs: "1fr",
 
-  <Box>
-    <Typography sx={{ mb: 1, fontSize: 13, fontWeight: 600, color: "#64748B" }}>
-      Department
-    </Typography>
+              md: "1fr 1fr",
 
-    <TextField
-      fullWidth
-      name="department"
-      value={formData.department}
-      onChange={handleChange}
-      placeholder="Enter Department"
-      sx={textFieldStyle}
-    />
-  </Box>
+            },
 
-  {/* Specialization */}
+            gap: 2.5,
 
-  <Box>
-    <Typography sx={{ mb: 1, fontSize: 13, fontWeight: 600, color: "#64748B" }}>
-      Specialization
-    </Typography>
+          }}
 
-    <TextField
-      fullWidth
-      name="specialization"
-      value={formData.specialization}
-      onChange={handleChange}
-      placeholder="Enter Specialization"
-      sx={textFieldStyle}
-    />
-  </Box>
+        >
 
-  {/* Phone */}
+          {/* NAME */}
 
-  <Box>
-    <Typography sx={{ mb: 1, fontSize: 13, fontWeight: 600, color: "#64748B" }}>
-      Phone Number
-    </Typography>
+          <TextField
 
-    <TextField
-      fullWidth
-      name="phone"
-      value={formData.phone}
-      onChange={handleChange}
-      placeholder="Enter Phone Number"
-      sx={textFieldStyle}
-    />
-  </Box>
+            fullWidth
 
-  {/* Experience */}
+            label="Doctor Name"
 
-  <Box>
-    <Typography sx={{ mb: 1, fontSize: 13, fontWeight: 600, color: "#64748B" }}>
-      Experience
-    </Typography>
+            name="name"
 
-    <TextField
-      fullWidth
-      name="experience"
-      value={formData.experience}
-      onChange={handleChange}
-      placeholder="Enter Experience"
-      sx={textFieldStyle}
-    />
-  </Box>
+            value={
+              formData.name
+            }
 
-</Box>
-</FormDialog>
+            onChange={
+              handleChange
+            }
 
-<FormDialog
-  open={viewOpen}
-  onClose={() => setViewOpen(false)}
-  title="Doctor Details"
-  submitText="Close"
-  onSubmit={() => setViewOpen(false)}
->
+            placeholder=
+              "e.g. Dr. Ahmed Khan"
 
- <Box
-  sx={{
-    display: "grid",
-    gridTemplateColumns: {
-      xs: "1fr",
-      md: "1fr 1fr",
-    },
-    gap: 2.5,
-    mt: 3,
-  }}
->
+            sx={
+              textFieldStyle
+            }
 
-  <Box
-    sx={{
-      p: 2,
-      border: "1px solid #E2E8F0",
-      borderRadius: 2,
-      bgcolor: "#F8FAFC",
-    }}
-  >
-    <Typography sx={{ fontSize: 13, color: "#94A3B8", fontWeight: 700 }}>
-      Doctor Name
-    </Typography>
+          />
 
-    <Typography sx={{ mt: .5, fontSize: 15, fontWeight: 600 }}>
-      {selectedDoctor?.name || "-"}
-    </Typography>
-  </Box>
 
-  <Box
-    sx={{
-      p: 2,
-      border: "1px solid #E2E8F0",
-      borderRadius: 2,
-      bgcolor: "#F8FAFC",
-    }}
-  >
-    <Typography sx={{ fontSize: 13, color: "#94A3B8", fontWeight: 700 }}>
-      Email Address
-    </Typography>
+          {/* EMAIL */}
 
-    <Typography sx={{ mt: .5, fontSize: 15, fontWeight: 600 }}>
-      {selectedDoctor?.email || "-"}
-    </Typography>
-  </Box>
+          <TextField
 
-  <Box
-    sx={{
-      p: 2,
-      border: "1px solid #E2E8F0",
-      borderRadius: 2,
-      bgcolor: "#F8FAFC",
-    }}
-  >
-    <Typography sx={{ fontSize: 13, color: "#94A3B8", fontWeight: 700 }}>
-      Department
-    </Typography>
+            fullWidth
 
-    <Typography sx={{ mt: .5, fontSize: 15, fontWeight: 600 }}>
-      {selectedDoctor?.department || "-"}
-    </Typography>
-  </Box>
+            label="Email Address"
 
-  <Box
-    sx={{
-      p: 2,
-      border: "1px solid #E2E8F0",
-      borderRadius: 2,
-      bgcolor: "#F8FAFC",
-    }}
-  >
-    <Typography sx={{ fontSize: 13, color: "#94A3B8", fontWeight: 700 }}>
-      Specialization
-    </Typography>
+            name="email"
 
-    <Typography sx={{ mt: .5, fontSize: 15, fontWeight: 600 }}>
-      {selectedDoctor?.specialization || "-"}
-    </Typography>
-  </Box>
+            value={
+              formData.email
+            }
 
-  <Box
-    sx={{
-      p: 2,
-      border: "1px solid #E2E8F0",
-      borderRadius: 2,
-      bgcolor: "#F8FAFC",
-    }}
-  >
-    <Typography sx={{ fontSize: 13, color: "#94A3B8", fontWeight: 700 }}>
-      Phone Number
-    </Typography>
+            onChange={
+              handleChange
+            }
 
-    <Typography sx={{ mt: .5, fontSize: 15, fontWeight: 600 }}>
-      {selectedDoctor?.phone || "-"}
-    </Typography>
-  </Box>
+            placeholder=
+              "doctor@hospital.com"
 
-  <Box
-    sx={{
-      p: 2,
-      border: "1px solid #E2E8F0",
-      borderRadius: 2,
-      bgcolor: "#F8FAFC",
-    }}
-  >
-    <Typography sx={{ fontSize: 13, color: "#94A3B8", fontWeight: 700 }}>
-      Experience
-    </Typography>
+            sx={
+              textFieldStyle
+            }
 
-    <Typography sx={{ mt: .5, fontSize: 15, fontWeight: 600 }}>
-      {selectedDoctor?.experience
-        ? `${selectedDoctor.experience} Years`
-        : "-"}
-    </Typography>
-  </Box>
+          />
 
-  <Box
-    sx={{
-      p: 2,
-      border: "1px solid #E2E8F0",
-      borderRadius: 2,
-      bgcolor: "#F8FAFC",
-    }}
-  >
-    <Typography sx={{ fontSize: 13, color: "#94A3B8", fontWeight: 700 }}>
-      Role
-    </Typography>
 
-    <Typography sx={{ mt: .5, fontSize: 15, fontWeight: 600 }}>
-      {selectedDoctor?.role || "Doctor"}
-    </Typography>
-  </Box>
+          {/* PASSWORD */}
 
-  <Box
-    sx={{
-      p: 2,
-      border: "1px solid #E2E8F0",
-      borderRadius: 2,
-      bgcolor: "#F8FAFC",
-    }}
-  >
-    <Typography
-      sx={{
-        fontSize: 13,
-        color: "#94A3B8",
-        fontWeight: 700,
-        mb: 1,
-      }}
-    >
-      Status
-    </Typography>
+          {!editingId && (
 
-    <StatusChip
-      status={selectedDoctor?.status || "Active"}
-    />
-  </Box>
+            <TextField
 
-</Box>
+              fullWidth
 
-</FormDialog>
+              type="password"
+
+              label="Password"
+
+              name="password"
+
+              value={
+                formData.password
+              }
+
+              onChange={
+                handleChange
+              }
+
+              placeholder=
+                "Enter password"
+
+              sx={
+                textFieldStyle
+              }
+
+            />
+
+          )}
+
+
+          {/* DEPARTMENT */}
+
+          <TextField
+
+            fullWidth
+
+            label="Department"
+
+            name="department"
+
+            value={
+              formData.department
+            }
+
+            onChange={
+              handleChange
+            }
+
+            placeholder=
+              "e.g. Cardiology"
+
+            sx={
+              textFieldStyle
+            }
+
+          />
+
+
+          {/* SPECIALIZATION */}
+
+          <TextField
+
+            fullWidth
+
+            label="Specialization"
+
+            name="specialization"
+
+            value={
+              formData.specialization
+            }
+
+            onChange={
+              handleChange
+            }
+
+            placeholder=
+              "e.g. Interventional Cardiology"
+
+            sx={
+              textFieldStyle
+            }
+
+          />
+
+
+          {/* PHONE */}
+
+          <TextField
+
+            fullWidth
+
+            label="Phone Number"
+
+            name="phone"
+
+            value={
+              formData.phone
+            }
+
+            onChange={
+              handleChange
+            }
+
+            placeholder=
+              "e.g. 9876543210"
+
+            sx={
+              textFieldStyle
+            }
+
+          />
+
+
+          {/* EXPERIENCE */}
+
+          <TextField
+
+            fullWidth
+
+            label="Experience (Years)"
+
+            name="experience"
+
+            type="number"
+
+            value={
+              formData.experience
+            }
+
+            onChange={
+              handleChange
+            }
+
+            placeholder="e.g. 10"
+
+            inputProps={{
+              min: 0,
+            }}
+
+            sx={
+              textFieldStyle
+            }
+
+          />
+
+        </Box>
+
+      </FormDialog>
+
+
+      {/* =========================
+          VIEW DOCTOR
+      ========================= */}
+
+      <FormDialog
+
+        open={viewOpen}
+
+        onClose={() =>
+          setViewOpen(false)
+        }
+
+        title="Doctor Details"
+
+        submitText="Close"
+
+        onSubmit={() =>
+          setViewOpen(false)
+        }
+
+        hideCancel
+
+      >
+
+        {selectedDoctor && (
+
+          <Box
+
+            sx={{
+
+              mt: 2,
+
+              display: "grid",
+
+              gridTemplateColumns: {
+
+                xs: "1fr",
+
+                sm: "1fr 1fr",
+
+              },
+
+              gap: 2,
+
+            }}
+
+          >
+
+            {[
+              [
+                "Doctor Name",
+                selectedDoctor.name,
+              ],
+
+              [
+                "Email",
+                selectedDoctor.email,
+              ],
+
+              [
+                "Department",
+                selectedDoctor.department,
+              ],
+
+              [
+                "Specialization",
+                selectedDoctor.specialization,
+              ],
+
+              [
+                "Phone",
+                selectedDoctor.phone,
+              ],
+
+              [
+                "Experience",
+                selectedDoctor.experience
+                  ? `${selectedDoctor.experience} Years`
+                  : "-",
+              ],
+
+            ].map(
+              ([label, value]) => (
+
+                <Box
+
+                  key={label}
+
+                  sx={{
+
+                    p: 2,
+
+                    border:
+                      "1px solid #E2E8F0",
+
+                    borderRadius: 3,
+
+                    bgcolor:
+                      "#F8FAFC",
+
+                  }}
+
+                >
+
+                  <Typography
+
+                    sx={{
+
+                      fontSize: 11,
+
+                      fontWeight: 700,
+
+                      color:
+                        "#64748B",
+
+                      textTransform:
+                        "uppercase",
+
+                      mb: .5,
+
+                    }}
+
+                  >
+
+                    {label}
+
+                  </Typography>
+
+
+                  <Typography
+
+                    sx={{
+
+                      fontSize: 14,
+
+                      fontWeight: 700,
+
+                      color:
+                        "#0F172A",
+
+                      wordBreak:
+                        "break-word",
+
+                    }}
+
+                  >
+
+                    {value || "-"}
+
+                  </Typography>
+
+                </Box>
+
+              )
+            )}
+
+
+            {/* ROLE */}
+
+            <Box
+
+              sx={{
+
+                p: 2,
+
+                border:
+                  "1px solid #E2E8F0",
+
+                borderRadius: 3,
+
+                bgcolor:
+                  "#F8FAFC",
+
+              }}
+
+            >
+
+              <Typography
+
+                sx={{
+
+                  fontSize: 11,
+
+                  fontWeight: 700,
+
+                  color:
+                    "#64748B",
+
+                  textTransform:
+                    "uppercase",
+
+                  mb: 1,
+
+                }}
+
+              >
+
+                Role
+
+              </Typography>
+
+
+              <RoleChip
+                role={
+                  selectedDoctor.role ||
+                  "Doctor"
+                }
+              />
+
+            </Box>
+
+
+            {/* STATUS */}
+
+            <Box
+
+              sx={{
+
+                p: 2,
+
+                border:
+                  "1px solid #E2E8F0",
+
+                borderRadius: 3,
+
+                bgcolor:
+                  "#F8FAFC",
+
+              }}
+
+            >
+
+              <Typography
+
+                sx={{
+
+                  fontSize: 11,
+
+                  fontWeight: 700,
+
+                  color:
+                    "#64748B",
+
+                  textTransform:
+                    "uppercase",
+
+                  mb: 1,
+
+                }}
+
+              >
+
+                Status
+
+              </Typography>
+
+
+              <StatusChip
+                status={
+                  selectedDoctor.status ||
+                  "Active"
+                }
+              />
+
+            </Box>
+
+          </Box>
+
+        )}
+
+      </FormDialog>
 
     </DashboardLayout>
 
   );
 
 }
+
 
 export default Doctors;

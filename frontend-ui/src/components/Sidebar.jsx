@@ -163,8 +163,8 @@ function Sidebar() {
 
    <Box
   sx={{
-   width: 270,
-minWidth: 270,
+   width: 290,
+minWidth: 290,
 minHeight: "100vh",
 height: "100%",
 alignSelf: "stretch",
@@ -198,18 +198,17 @@ flexShrink: 0,
 >
 
   <Avatar
-    sx={{
-      width: 50,
-      height: 50,
-      bgcolor: "#fff",
-      color: "#0F766E",
-      fontWeight: 700,
-      fontSize: 22,
-      boxShadow: "0 8px 18px rgba(0,0,0,.18)",
-    }}
-  >
-    H
-  </Avatar>
+sx={{
+width: 56,
+height: 56,
+bgcolor: "#14B8A6",
+color: "#fff",
+fontWeight: 700,
+fontSize: 28,
+}}
+>
+  <LocalHospitalIcon fontSize="medium" />
+</Avatar>
 
   <Box>
 
@@ -262,7 +261,7 @@ opacity: .75,
           component={NavLink}
           to={menu.path}
           sx={{
-  height: 42,
+  height: 52,
   mb: 0.6,
   px: 2,
   borderRadius: "12px",
@@ -271,12 +270,12 @@ opacity: .75,
   transition: "all .25s",
 
   "& .MuiListItemIcon-root": {
-    minWidth: 34,
+    minWidth: 42,
     color: "#A7F3D0",
   },
 
   "& .MuiListItemText-primary": {
-    fontSize: 13.5,
+    fontSize: 15,
     fontWeight: 600,
   },
 
@@ -332,6 +331,38 @@ opacity: .75,
     </Box>
   ))}
 </List>
+
+<Box
+sx={{
+mx: 2,
+mb: 2,
+mt: 2,
+p: 2,
+borderRadius: 3,
+background: "rgba(255,255,255,.08)",
+}}
+>
+
+<Typography
+sx={{
+fontWeight: 700,
+fontSize: 15,
+color: "#fff",
+}}
+>
+Administrator
+</Typography>
+
+<Typography
+sx={{
+fontSize: 13,
+color: "#CBD5E1",
+}}
+>
+admin@hospital.com
+</Typography>
+
+</Box>
 
     </Box>
   );

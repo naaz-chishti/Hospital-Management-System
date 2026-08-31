@@ -106,7 +106,7 @@ icon:<PaymentsIcon/>
 ];
 
   return (
-    <DashboardLayout>
+    <DashboardLayout showSearch={true}>
 
       {/* Header */}
       <Box
